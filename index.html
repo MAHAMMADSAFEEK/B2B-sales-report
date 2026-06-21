@@ -1183,38 +1183,68 @@ function showSpinner(msg){
 }
 function hideSpinner(){const el=document.getElementById('bdm-spin-ov');if(el)el.style.display='none';}
 
-// PapaParse-based live fetch — identical pattern to reference Ops Dashboard
-// Tries each URL in order, falls back to setup guide if all fail.
+// Live fetch — Apps Script uses fetch() (CORS-safe), public URLs use PapaParse
+// Apps Script /exec responds to fetch() just fine; PapaParse download:true is for
+// public Google Sheets endpoints (gviz/export) which don't have CORS issues.
 function refreshFromSheet(){
   const btn=document.getElementById('refreshbtn');
   if(btn)btn.disabled=true;
-  const urls=getSheetUrls();
+
+  // Step 1: Try the Apps Script proxy via fetch() — works regardless of sheet privacy
+  if(APPS_SCRIPT_URL){
+    showSpinner('Connecting to sheet via Apps Script…');
+    fetch(APPS_SCRIPT_URL, {redirect:'follow'})
+      .then(res=>{
+        if(!res.ok) throw new Error('HTTP '+res.status);
+        return res.text();
+      })
+      .then(text=>{
+        // Validate: Apps Script should return CSV, not HTML
+        const first=(text||'').trimStart().slice(0,5).toLowerCase();
+        if(first.startsWith('<')){throw new Error('Got HTML instead of CSV — check script authorization');}
+        if(!text||text.split('\n').length<5){throw new Error('Empty response from Apps Script');}
+        hideSpinner();
+        if(btn)btn.disabled=false;
+        refreshFromCSV(text);
+      })
+      .catch(err=>{
+        console.warn('[Apps Script fetch] failed:',err.message);
+        // Fall through to PapaParse public endpoint attempt
+        tryPapaFallback(err.message);
+      });
+    return;
+  }
+
+  // No Apps Script URL configured — go straight to public fallback
+  tryPapaFallback(null);
+}
+
+// Step 2: Try public gviz / export URLs via PapaParse (requires sheet to be "Anyone with link")
+function tryPapaFallback(prevErr){
+  const btn=document.getElementById('refreshbtn');
+  const fallbacks=[
+    {url:`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${MEETING_GID}`, label:'gviz CSV'},
+    {url:`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${MEETING_GID}`, label:'export CSV'}
+  ];
   let idx=0;
 
   function tryNext(){
-    if(idx>=urls.length){
+    if(idx>=fallbacks.length){
       hideSpinner();
       if(btn)btn.disabled=false;
-      showSetupGuide('All endpoints failed — see setup options below');
+      showSetupGuide(prevErr||'All endpoints failed');
       return;
     }
-    const {url,label}=urls[idx++];
-    showSpinner('Loading from sheet… ('+label+')');
-
+    const {url,label}=fallbacks[idx++];
+    showSpinner('Trying public endpoint… ('+label+')');
     Papa.parse(url,{
-      download: true,       // PapaParse fetches the URL directly (same as Ops dashboard)
-      header: false,
-      skipEmptyLines: true,
-      withCredentials: true, // sends Google session cookies → works for signed-in users
+      download:true,
+      header:false,
+      skipEmptyLines:true,
       complete(result){
         const rows=result.data||[];
-        // Validate: if Google returns a login page instead of CSV, first cell is HTML
-        const first=String(((rows[0]||[])[0])||'').trim().toLowerCase();
-        if(first.startsWith('<')||first.startsWith('<!')||rows.length<5){
-          tryNext(); // got HTML or empty → try next URL
-          return;
-        }
-        // Re-encode as CSV text so our existing refreshFromCSV parser can handle it
+        const first=String(((rows[0]||[])[0])||'').trim().slice(0,5).toLowerCase();
+        if(first.startsWith('<')||rows.length<5){tryNext();return;}
         const csvText=rows.map(r=>r.map(c=>{
           const s=String(c==null?'':c);
           return (s.includes(',')||s.includes('"')||s.includes('\n'))?'"'+s.replace(/"/g,'""')+'"':s;
@@ -1223,13 +1253,9 @@ function refreshFromSheet(){
         if(btn)btn.disabled=false;
         refreshFromCSV(csvText);
       },
-      error(err){
-        console.warn('['+label+'] PapaParse error:',err);
-        tryNext();
-      }
+      error(err){console.warn('['+label+'] error:',err);tryNext();}
     });
   }
-
   tryNext();
 }
 
