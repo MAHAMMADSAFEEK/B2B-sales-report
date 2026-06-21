@@ -480,19 +480,69 @@
       <button onclick="clearSWFilters()" style="padding:7px 14px;border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--muted);font-size:12px;cursor:pointer;height:33px;align-self:flex-end;">✕ Clear</button>
     </div>
     <!-- Charts row -->
-    <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:14px;margin-bottom:14px;">
-      <div class="card"><h3>Won by Month</h3><div class="hint">Sale Done projects by won date</div><div style="position:relative;height:240px"><canvas id="sw-trend"></canvas></div></div>
+    <div style="display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:14px;">
+      <!-- Won by Month — full width, with sub-tabs for City/BDM breakdown and click-to-filter -->
+      <div class="card" id="sw-month-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px;">
+          <div>
+            <h3 style="margin:0;">Won by Month</h3>
+            <div class="hint" style="margin:2px 0 0 0;">Click a bar to filter projects · <span id="sw-month-filter-label" style="color:var(--green);font-weight:600;"></span></div>
+          </div>
+          <!-- Sub-tab selector -->
+          <div style="display:flex;gap:4px;background:var(--b50);border-radius:10px;padding:3px;">
+            <button id="sw-md-btn-monthly" onclick="setSWMonthDim('monthly')" style="font-size:11.5px;padding:5px 13px;border-radius:8px;border:none;background:var(--b600);color:#fff;cursor:pointer;font-weight:700;">📅 Monthly</button>
+            <button id="sw-md-btn-city"    onclick="setSWMonthDim('city')"    style="font-size:11.5px;padding:5px 13px;border-radius:8px;border:none;background:transparent;color:var(--muted);cursor:pointer;">🏙 City-wise</button>
+            <button id="sw-md-btn-bdm"     onclick="setSWMonthDim('bdm')"     style="font-size:11.5px;padding:5px 13px;border-radius:8px;border:none;background:transparent;color:var(--muted);cursor:pointer;">👤 BDM-wise</button>
+          </div>
+        </div>
+        <!-- Monthly chart (visible by default) -->
+        <div id="sw-dim-monthly" style="position:relative;height:260px;margin-top:10px;">
+          <canvas id="sw-trend"></canvas>
+        </div>
+        <!-- City-wise table (hidden by default) -->
+        <div id="sw-dim-city" style="display:none;margin-top:10px;">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;">
+            <thead><tr style="background:var(--b900);color:#fff;">
+              <th style="padding:9px 12px;text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;">#</th>
+              <th style="padding:9px 12px;text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;">City</th>
+              <th style="padding:9px 12px;text-align:right;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;">Projects Won</th>
+              <th style="padding:9px 12px;text-align:right;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;">Capacity (KW)</th>
+              <th style="padding:9px 12px;text-align:right;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;">HOTO Done</th>
+              <th style="padding:9px 12px;text-align:right;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;">Avg Days to Win</th>
+              <th style="padding:9px 12px;font-size:10.5px;min-width:100px;"></th>
+            </tr></thead>
+            <tbody id="sw-city-tbl-body"></tbody>
+          </table>
+        </div>
+        <!-- BDM-wise table (hidden by default) -->
+        <div id="sw-dim-bdm" style="display:none;margin-top:10px;">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;">
+            <thead><tr style="background:var(--b900);color:#fff;">
+              <th style="padding:9px 12px;text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;">#</th>
+              <th style="padding:9px 12px;text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;">BDM</th>
+              <th style="padding:9px 12px;text-align:right;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;">Projects Won</th>
+              <th style="padding:9px 12px;text-align:right;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;">Capacity (KW)</th>
+              <th style="padding:9px 12px;text-align:right;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;">HOTO Done</th>
+              <th style="padding:9px 12px;text-align:right;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;">Avg Days to Win</th>
+              <th style="padding:9px 12px;font-size:10.5px;min-width:120px;"></th>
+            </tr></thead>
+            <tbody id="sw-bdm-tbl-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;">
       <div class="card"><h3>Won by City</h3><div style="position:relative;height:240px" id="sw-city-bars"></div></div>
       <div class="card"><h3>Payment Plan Mix</h3><div class="hint">Capex / ZIP / Opex breakdown</div><div style="position:relative;height:240px"><canvas id="sw-payment"></canvas></div></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
-      <div class="card"><h3>BDM Leaderboard — Sales Won</h3><div class="hint">Ranked by sales closed</div><div id="sw-bdm-table"></div></div>
       <div class="card"><h3>HOTO Status</h3><div class="hint">Handover completed vs pending</div><div id="sw-hoto-bars"></div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:14px;">
+      <div class="card"><h3>BDM Leaderboard — Sales Won</h3><div class="hint">Ranked by sales closed</div><div id="sw-bdm-table"></div></div>
     </div>
     <!-- Projects table -->
     <div class="card">
-      <h3>Sale Won — All Projects</h3>
-      <div class="hint">All leads with Current Stage = Sale Done · sorted by won date (newest first)</div>
+      <h3>Sale Won — All Projects <span id="sw-active-filter-badge" style="display:none;font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px;background:#e7f6ee;color:#1f9d6b;margin-left:8px;vertical-align:middle;"></span></h3>
+      <div class="hint">Click a project name to view its journey · <b id="sw-proj-count"></b></div>
       <div class="ptable-wrap"><table id="sw-tbl"><thead><tr>
         <th>#</th><th>Project</th><th>City</th><th>BDM</th><th>Size KW</th>
         <th>Won Date</th><th>HOTO Date</th><th>Days to Win</th><th>HOTO Lag</th><th>Meetings</th><th>Payment</th><th>Category</th><th>Stage / Reason</th>
@@ -1626,7 +1676,30 @@ function showSetupGuide(errMsg){
 //  SALE WON TAB
 // ═══════════════════════════════════════════════════════════════
 let _swCharts={};
+let _swMonthDim='monthly';   // 'monthly' | 'city' | 'bdm'
+let _swClickedMonth='';      // ISO key e.g. '2026-03' — when a bar is clicked
 function _swDestroyCharts(){Object.values(_swCharts).forEach(c=>c&&c.destroy());_swCharts={};}
+
+// Sub-tab switcher for Won by Month card
+function setSWMonthDim(dim){
+  _swMonthDim=dim;
+  ['monthly','city','bdm'].forEach(d=>{
+    const btn=document.getElementById('sw-md-btn-'+d);
+    if(btn){btn.style.background=d===dim?'var(--b600)':'transparent';btn.style.color=d===dim?'#fff':'var(--muted)';}
+    const el=document.getElementById('sw-dim-'+d);
+    if(el)el.style.display=d===dim?'':'none';
+  });
+  renderSaleWon();
+}
+
+// Click a month bar → filter the projects table to that month
+function swSetMonthFilter(isoKey){
+  if(_swClickedMonth===isoKey){_swClickedMonth='';} // toggle off
+  else _swClickedMonth=isoKey;
+  const lbl=document.getElementById('sw-month-filter-label');
+  if(lbl)lbl.textContent=_swClickedMonth?'Filtered: '+monDisp(_swClickedMonth)+' (click again to clear)':'';
+  renderSaleWon();
+}
 
 function getSaleWonLeads(){
   // A lead is "Sale Won" if ANY of its rows has currStage containing "Sale Done"
@@ -1659,21 +1732,51 @@ function swFill(id,vals,label0='All'){
     const o=document.createElement('option');o.value=v;o.textContent=v;if(v===cur)o.selected=true;s.appendChild(o);});
 }
 
+// Shared row breakdown renderer (city-wise or BDM-wise table inside Won by Month card)
+function swRenderDimTable(tbodyId,data,dimFn,label){
+  const agg={};
+  data.forEach(x=>{
+    const k=dimFn(x)||'Unknown';
+    if(!agg[k])agg[k]={count:0,kw:0,hoto:0,days:[]};
+    agg[k].count++;agg[k].kw+=(x.size||0);
+    if(x.hoto)agg[k].hoto++;
+    if(x.d2won!==null)agg[k].days.push(x.d2won);
+  });
+  const arr=Object.entries(agg).sort((a,b)=>b[1].count-a[1].count);
+  const maxC=arr[0]?.[1].count||1;
+  const tb=document.getElementById(tbodyId);
+  if(!tb)return;
+  tb.innerHTML=arr.map(([k,v],i)=>{
+    const avgD=v.days.length?Math.round(v.days.reduce((a,b)=>a+b,0)/v.days.length):null;
+    const barW=Math.round(v.count/maxC*100);
+    return `<tr style="border-bottom:1px solid var(--line);">
+      <td style="padding:7px 12px;color:var(--muted);font-size:11px;">${i+1}</td>
+      <td style="padding:7px 12px;font-weight:600;font-size:13px;">${k}</td>
+      <td style="padding:7px 12px;text-align:right;font-weight:700;color:#1f9d6b;font-size:14px;">${v.count}</td>
+      <td style="padding:7px 12px;text-align:right;color:var(--muted);">${Math.round(v.kw).toLocaleString('en-IN')}</td>
+      <td style="padding:7px 12px;text-align:right;">${v.hoto?`<span style="color:#1f9d6b;font-weight:600;">${v.hoto} ✓</span>`:'<span style="color:var(--muted);">—</span>'}</td>
+      <td style="padding:7px 12px;text-align:right;">${avgD!==null?`<span style="background:#eaf1fd;color:#1554b8;font-size:10.5px;padding:2px 8px;border-radius:999px;font-weight:700;">${avgD}d</span>`:'—'}</td>
+      <td style="padding:7px 12px;"><div style="height:6px;background:#e0f5ed;border-radius:3px;"><div style="width:${barW}%;height:100%;background:linear-gradient(90deg,#1f9d6b,#34c98a);border-radius:3px;"></div></div></td>
+    </tr>`;
+  }).join('');
+}
+
 function renderSaleWon(){
   _swDestroyCharts();
   const all=getSaleWonLeads();
-  // Populate filter dropdowns (only first call)
+  // Populate filter dropdowns
   swFill('sw-f-city',all.map(x=>x.city));
   swFill('sw-f-bdm',all.map(x=>x.bdm));
   swFill('sw-f-payment',all.map(x=>x.payment));
   const months=[...new Set(all.map(x=>(x.wonDate||'').slice(0,7)).filter(Boolean))].sort();
   swFill('sw-f-month',months.map(m=>{const[y,mo]=m.split('-');return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+mo-1]+' '+y;}));
-  // apply filters
+
+  // Apply dropdown filters
   const fCity=(document.getElementById('sw-f-city')||{}).value||'';
   const fBDM=(document.getElementById('sw-f-bdm')||{}).value||'';
   const fPay=(document.getElementById('sw-f-payment')||{}).value||'';
   const fMonth=(document.getElementById('sw-f-month')||{}).value||'';
-  const data=all.filter(x=>{
+  const base=all.filter(x=>{
     if(fCity&&x.city!==fCity)return false;
     if(fBDM&&x.bdm!==fBDM)return false;
     if(fPay&&x.payment!==fPay)return false;
@@ -1681,26 +1784,65 @@ function renderSaleWon(){
     return true;
   });
 
-  // Summary KPIs
-  const totalKW=data.reduce((s,x)=>s+(x.size||0),0);
-  const hotoCount=data.filter(x=>x.hoto).length;
-  const avgD2Won=data.filter(x=>x.d2won!==null);const avgW=avgD2Won.length?Math.round(avgD2Won.reduce((s,x)=>s+x.d2won,0)/avgD2Won.length):0;
+  // Summary KPIs (always over base, not the clicked-month slice)
+  const totalKW=base.reduce((s,x)=>s+(x.size||0),0);
+  const hotoCount=base.filter(x=>x.hoto).length;
+  const avgD2Won=base.filter(x=>x.d2won!==null);const avgW=avgD2Won.length?Math.round(avgD2Won.reduce((s,x)=>s+x.d2won,0)/avgD2Won.length):0;
   const kpiHtml=(v,l,c)=>`<div style="text-align:center;"><div style="font-size:26px;font-weight:800;color:${c};">${v}</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#9fdfbf;">${l}</div></div>`;
   document.getElementById('sw-summary-kpis').innerHTML=
-    kpiHtml(data.length,'Projects','#fff')+
+    kpiHtml(base.length,'Projects','#fff')+
     kpiHtml(Math.round(totalKW).toLocaleString('en-IN')+' KW','Capacity','#a8f0c8')+
     kpiHtml(hotoCount,'HOTO Done','#ffd966')+
     kpiHtml(avgW+'d','Avg Days to Win','#a8d8f0');
 
-  // Chart 1: Won by Month bar
-  const wonByMonth={};data.forEach(x=>{const m=(x.wonDate||'').slice(0,7);if(m)wonByMonth[m]=(wonByMonth[m]||0)+1;});
+  // ── Won by Month — chart + sub-tables ──
+  const wonByMonth={};base.forEach(x=>{const m=(x.wonDate||'').slice(0,7);if(m)wonByMonth[m]=(wonByMonth[m]||0)+1;});
   const mKeys=Object.keys(wonByMonth).sort();
-  const mLabels=mKeys.map(m=>{const[y,mo]=m.split('-');return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+mo-1]+' '+y.slice(2);});
-  const tCtx=document.getElementById('sw-trend');
-  if(tCtx){_swCharts.trend=new Chart(tCtx,{type:'bar',data:{labels:mLabels,datasets:[{data:mKeys.map(k=>wonByMonth[k]),backgroundColor:'#1f9d6b',borderRadius:6,maxBarThickness:40}]},options:{plugins:{legend:{display:false},datalabels:{color:'#fff',font:{weight:700,size:11}}},scales:{y:{beginAtZero:true,grid:{color:'#eef2f9'}},x:{grid:{display:false}}},maintainAspectRatio:false}});}
+  const mLabels=mKeys.map(m=>{const[y,mo]=m.split('-');return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+mo-1]+" '"+y.slice(2);});
 
-  // Chart 2: Won by City (horizontal bars)
-  const cityCount={};data.forEach(x=>{const c=x.city||'Unknown';cityCount[c]=(cityCount[c]||0)+1;});
+  // Validate _swClickedMonth still has data
+  if(_swClickedMonth&&!wonByMonth[_swClickedMonth])_swClickedMonth='';
+
+  const tCtx=document.getElementById('sw-trend');
+  if(tCtx){
+    const barColors=mKeys.map(k=>k===_swClickedMonth?'#0b6e3f':'#1f9d6b');
+    _swCharts.trend=new Chart(tCtx,{
+      type:'bar',
+      data:{labels:mLabels,datasets:[{
+        data:mKeys.map(k=>wonByMonth[k]),
+        backgroundColor:barColors,
+        borderRadius:6,maxBarThickness:46
+      }]},
+      options:{
+        onClick:(e,el)=>{if(el[0])swSetMonthFilter(mKeys[el[0].index]);},
+        plugins:{
+          legend:{display:false},
+          datalabels:{color:'#fff',font:{weight:700,size:11},anchor:'center',align:'center',
+            formatter:(v)=>v>0?v:''}
+        },
+        scales:{y:{beginAtZero:true,grid:{color:'#eef2f9'}},x:{grid:{display:false}}},
+        maintainAspectRatio:false
+      }
+    });
+  }
+
+  // City-wise table inside Won by Month
+  swRenderDimTable('sw-city-tbl-body',base,x=>x.city,'City');
+  // BDM-wise table inside Won by Month
+  swRenderDimTable('sw-bdm-tbl-body',base,x=>x.bdm,'BDM');
+
+  // ── Filter data for the projects table (apply clicked month on top of base) ──
+  const data=_swClickedMonth?base.filter(x=>(x.wonDate||'').slice(0,7)===_swClickedMonth):base;
+
+  // Active filter badge on table header
+  const badge=document.getElementById('sw-active-filter-badge');
+  if(badge){badge.style.display=_swClickedMonth?'':'none';badge.textContent=_swClickedMonth?'📅 '+monDisp(_swClickedMonth)+' · '+data.length+' projects'+'  ×':'';}
+  if(badge)badge.onclick=()=>{_swClickedMonth='';renderSaleWon();};
+  const pc=document.getElementById('sw-proj-count');
+  if(pc)pc.textContent=data.length+' projects'+(base.length>data.length?' (filtered from '+base.length+')':'');
+
+  // Chart 2: Won by City (horizontal bars) — always full base
+  const cityCount={};base.forEach(x=>{const c=x.city||'Unknown';cityCount[c]=(cityCount[c]||0)+1;});
   const cityArr=Object.entries(cityCount).sort((a,b)=>b[1]-a[1]).slice(0,8);
   const cityMax=cityArr[0]?.[1]||1;
   document.getElementById('sw-city-bars').innerHTML=cityArr.map(([c,n])=>`
@@ -1713,13 +1855,13 @@ function renderSaleWon(){
     </div>`).join('');
 
   // Chart 3: Payment mix doughnut
-  const payCount={};data.forEach(x=>{const p=x.payment||'Unknown';payCount[p]=(payCount[p]||0)+1;});
+  const payCount={};base.forEach(x=>{const p=x.payment||'Unknown';payCount[p]=(payCount[p]||0)+1;});
   const payColors={'Capex':'#1f9d6b','ZIP':'#4f8ef7','Opex':'#e0951f','Prefab':'#9b6dff','Unknown':'#9aa6ba'};
   const pCtx=document.getElementById('sw-payment');
   if(pCtx){_swCharts.pay=new Chart(pCtx,{type:'doughnut',data:{labels:Object.keys(payCount),datasets:[{data:Object.values(payCount),backgroundColor:Object.keys(payCount).map(k=>payColors[k]||'#9aa6ba'),borderWidth:2,borderColor:'#fff'}]},options:{cutout:'58%',plugins:{legend:{position:'bottom',labels:{boxWidth:9,font:{size:10},padding:7}},datalabels:{color:'#fff',font:{weight:700,size:11},formatter:v=>v>2?v:''}},maintainAspectRatio:false}});}
 
   // BDM Leaderboard
-  const bdmMap={};data.forEach(x=>{const b=x.bdm||'Unknown';if(!bdmMap[b])bdmMap[b]={won:0,kw:0,hoto:0};bdmMap[b].won++;bdmMap[b].kw+=(x.size||0);if(x.hoto)bdmMap[b].hoto++;});
+  const bdmMap={};base.forEach(x=>{const b=x.bdm||'Unknown';if(!bdmMap[b])bdmMap[b]={won:0,kw:0,hoto:0};bdmMap[b].won++;bdmMap[b].kw+=(x.size||0);if(x.hoto)bdmMap[b].hoto++;});
   const bdmArr=Object.entries(bdmMap).sort((a,b)=>b[1].won-a[1].won).slice(0,10);
   const maxWon=bdmArr[0]?.[1].won||1;
   document.getElementById('sw-bdm-table').innerHTML=`<table style="width:100%;font-size:12px;border-collapse:collapse;">
@@ -1733,8 +1875,8 @@ function renderSaleWon(){
     </tr>`).join('')}</tbody></table>`;
 
   // HOTO status
-  const hotoPending=data.filter(x=>!x.hoto).length;
-  const hotoLags=data.filter(x=>x.d2hoto!==null).map(x=>x.d2hoto);
+  const hotoPending=base.filter(x=>!x.hoto).length;
+  const hotoLags=base.filter(x=>x.d2hoto!==null).map(x=>x.d2hoto);
   const avgHotoLag=hotoLags.length?Math.round(hotoLags.reduce((a,b)=>a+b,0)/hotoLags.length):0;
   document.getElementById('sw-hoto-bars').innerHTML=`
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
@@ -1752,16 +1894,22 @@ function renderSaleWon(){
       <div style="font-size:11px;color:#7d5a0c;">Average Sale → HOTO lag</div>
     </div>`;
 
-  // Projects table
+  // ── Projects table — now uses 'data' (filtered by clicked month if any) ──
   const sorted=data.slice().sort((a,b)=>(b.wonDate||'').localeCompare(a.wonDate||''));
   const fmtD=iso=>iso?new Date(iso+' 00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'—';
   document.getElementById('sw-tbody').innerHTML=sorted.map((x,i)=>{
     const payPill={'Capex':'background:#e7f6ee;color:#1f9d6b','ZIP':'background:#eaf1fd;color:#1554b8','Opex':'background:#fdf3df;color:#9a6a06'}[x.payment]||'background:#f1f4fa;color:#6b7c97';
     const hotoBadge=x.hoto?`<span style="background:#e7f6ee;color:#1f9d6b;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;">✓ ${fmtD(x.hoto)}</span>`
       :`<span style="background:#fdecea;color:#d6493b;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;">Pending</span>`;
+    // Store data on window for journey popup
+    const swIdx='sw_'+i;
+    window._swJourney=window._swJourney||{};
+    window._swJourney[swIdx]=x;
     return `<tr style="border-bottom:1px solid var(--line);">
       <td style="padding:8px 10px;color:var(--muted);font-size:12px;">${i+1}</td>
-      <td style="padding:8px 10px;font-weight:500;font-size:13px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(x.r.proj||'').replace(/"/g,'&quot;')}">${x.r.proj||'—'}</td>
+      <td style="padding:8px 10px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(x.r.proj||'').replace(/"/g,'&quot;')}">
+        <b class="sw-proj-link" data-k="${swIdx}" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;color:var(--b700);font-size:13px;" title="Click for journey summary">${x.r.proj||'—'}</b>
+      </td>
       <td style="padding:8px 10px;font-size:12px;">${x.city||'—'}</td>
       <td style="padding:8px 10px;font-size:12px;">${x.bdm||'—'}</td>
       <td style="padding:8px 10px;text-align:right;font-size:12px;">${x.size?Math.round(x.size):'—'}</td>
@@ -1775,8 +1923,38 @@ function renderSaleWon(){
       <td style="padding:8px 10px;font-size:11px;color:var(--muted);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(x.saleReason||'').replace(/"/g,'&quot;')}">${x.saleReason||x.r.currStage||'—'}</td>
     </tr>`;
   }).join('');
+
+  // Wire journey popup clicks
+  document.querySelectorAll('.sw-proj-link').forEach(el=>el.onclick=e=>{
+    e.stopPropagation();
+    const x=window._swJourney[el.dataset.k];
+    if(!x)return;
+    // Build a PROJ-compatible entry and call openJourney
+    const fakeIdx=Object.keys(window._swJourney).indexOf(el.dataset.k);
+    window._swJourneyRef=window._swJourneyRef||[];
+    const jIdx=window._swJourneyRef.length;
+    window._swJourneyRef.push({rows:x.rows,r:x.r});
+    openJourneyDirect(jIdx,'_swJourneyRef');
+  });
 }
-function clearSWFilters(){['sw-f-city','sw-f-bdm','sw-f-payment','sw-f-month'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});renderSaleWon();}
+
+// Open journey popup from any source (not just PROJ[i])
+function openJourneyDirect(idx,src){
+  const ref=window[src]||window._swJourneyRef;
+  const p=ref[idx];if(!p)return;
+  // Temporarily push into PROJ-compatible path
+  const tempIdx=(window.PROJ||[]).length;
+  window.PROJ=window.PROJ||[];
+  window.PROJ[tempIdx]=p;
+  openJourney(tempIdx);
+}
+
+function clearSWFilters(){
+  ['sw-f-city','sw-f-bdm','sw-f-payment','sw-f-month'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  _swClickedMonth='';
+  const lbl=document.getElementById('sw-month-filter-label');if(lbl)lbl.textContent='';
+  renderSaleWon();
+}
 
 // ═══════════════════════════════════════════════════════════════
 //  NOT INTERESTED TAB
