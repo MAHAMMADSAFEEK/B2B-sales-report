@@ -240,6 +240,44 @@
   .logitem.latest{background:var(--b50);margin:0 -20px;padding:11px 20px;border-radius:8px}
   .logitem.latest .lt::after{content:" · LATEST";color:var(--green)}
 
+  /* ── Journey Summary timeline ── */
+  .jrny-timeline{position:relative;padding-left:28px;}
+  .jrny-timeline::before{content:'';position:absolute;left:10px;top:8px;bottom:8px;width:2px;background:linear-gradient(to bottom,var(--b500),var(--b100));}
+  .jrny-step{position:relative;margin-bottom:20px;}
+  .jrny-step:last-child{margin-bottom:0;}
+  .jrny-dot{position:absolute;left:-22px;top:6px;width:16px;height:16px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 2px currentColor;background:currentColor;flex-shrink:0;}
+  .jrny-step.step-fresh .jrny-dot{color:var(--b500);}
+  .jrny-step.step-fu .jrny-dot{color:var(--violet);}
+  .jrny-step.step-won .jrny-dot{color:var(--green);}
+  .jrny-step.step-hoto .jrny-dot{color:var(--amber);}
+  .jrny-step.step-lost .jrny-dot{color:var(--red);}
+  .jrny-step.step-pending .jrny-dot{color:var(--muted);}
+  .jrny-card{background:var(--b50);border:1px solid var(--line);border-radius:12px;padding:13px 15px;}
+  .jrny-step.step-won .jrny-card{background:#e7f6ee;border-color:#9fdfbf;}
+  .jrny-step.step-hoto .jrny-card{background:#fdf3df;border-color:#f5c857;}
+  .jrny-step.step-lost .jrny-card{background:#fdecea;border-color:#f5b8b3;}
+  .jrny-step.step-pending .jrny-card{background:#f5f7fb;border-color:var(--line);}
+  .jrny-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+  .jrny-step.step-fresh .jrny-label{color:var(--b600);}
+  .jrny-step.step-fu .jrny-label{color:var(--violet);}
+  .jrny-step.step-won .jrny-label{color:var(--green);}
+  .jrny-step.step-hoto .jrny-label{color:#9a6a06;}
+  .jrny-step.step-lost .jrny-label{color:var(--red);}
+  .jrny-step.step-pending .jrny-label{color:var(--muted);}
+  .jrny-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:5px;font-size:12px;}
+  .jrny-kv{display:flex;gap:4px;align-items:center;}
+  .jrny-k{color:var(--muted);font-size:11px;}
+  .jrny-v{color:var(--ink);font-weight:500;}
+  .jrny-sep{color:var(--line);font-size:14px;}
+  .jrny-days{display:inline-flex;align-items:center;gap:4px;background:rgba(21,84,184,.08);color:var(--b700);font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;}
+  .jrny-stat{display:inline-flex;align-items:center;}
+  .jrny-summary{background:var(--b900);color:#fff;border-radius:12px;padding:14px 18px;margin-bottom:20px;}
+  .jrny-summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:12px;margin-top:10px;}
+  .jrny-summary-kpi{display:flex;flex-direction:column;gap:3px;}
+  .jrny-summary-kpi .sv{font-size:22px;font-weight:800;color:#fff;line-height:1;}
+  .jrny-summary-kpi .sk{font-size:10px;color:#8fc0fd;text-transform:uppercase;letter-spacing:.5px;}
+  .jrny-callout{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);border-radius:8px;padding:8px 12px;margin-top:10px;font-size:12px;color:#cfe0ff;}
+
   @media(max-width:1100px){.kpis{grid-template-columns:repeat(3,1fr)}.r-3,.r-2{grid-template-columns:1fr}}
   @media(max-width:640px){.kpis{grid-template-columns:repeat(2,1fr)}}
 </style>
@@ -314,7 +352,19 @@
       </tr></thead><tbody></tbody></table></div></div></div>
 
     <div class="row r-wide"><div class="card">
-      <h3>Project-wise data</h3><div class="hint">One row per project · click a row to expand its meeting history · <b id="proj_count"></b></div>
+      <h3>Project-wise data</h3>
+      <div class="hint">One row per project · click a project name to view its journey · click ▶ to expand meetings · <b id="proj_count"></b></div>
+      <!-- LOCAL project name filter (only affects this table, not the dashboard filters) -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+        <div style="position:relative;flex:1;min-width:220px;max-width:340px;">
+          <input id="proj_search" type="text" placeholder="🔍  Filter by project name…"
+            style="width:100%;padding:8px 32px 8px 12px;border:1px solid var(--line);border-radius:9px;font-size:13px;color:var(--ink);background:var(--b50);outline:none;"
+            oninput="filterProjTable()" onfocus="this.style.borderColor='var(--b500)'" onblur="this.style.borderColor='var(--line)'">
+          <span id="proj_search_x" onclick="clearProjSearch()" title="Clear"
+            style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--muted);font-size:16px;line-height:1;">×</span>
+        </div>
+        <span id="proj_search_hint" style="font-size:12px;color:var(--muted);"></span>
+      </div>
       <div class="ptable-wrap"><table id="proj_tbl"><thead><tr>
         <th></th><th>City</th><th>BDM</th><th>Project</th><th class="num">Size KW</th>
         <th>Project status</th><th>HOTO date</th><th>Meeting start</th><th>Meeting end</th>
@@ -406,6 +456,20 @@
 <div class="modal-bg" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal"><div class="mh"><div><h4 id="m_title">Call log</h4><p id="m_sub"></p></div><button class="x" onclick="closeModal()">×</button></div>
   <div class="mb" id="m_body"></div></div>
+</div>
+
+<!-- JOURNEY SUMMARY MODAL -->
+<div class="modal-bg" id="jmodal" onclick="if(event.target===this)closeJourney()" style="z-index:70;">
+  <div class="modal" style="max-width:680px;max-height:88vh;display:flex;flex-direction:column;border-radius:18px;overflow:hidden;">
+    <div class="mh" style="background:linear-gradient(115deg,var(--b900),var(--b700));color:#fff;border-radius:0;padding:20px 24px;">
+      <div>
+        <h4 id="j_title" style="color:#fff;font-size:16px;"></h4>
+        <p id="j_sub" style="color:#cfe0ff;font-size:12px;margin-top:3px;"></p>
+      </div>
+      <button class="x" onclick="closeJourney()" style="color:#cfe0ff;font-size:24px;">×</button>
+    </div>
+    <div class="mb" id="j_body" style="overflow-y:auto;padding:20px 24px 24px;"></div>
+  </div>
 </div>
 
 <div class="modal-bg" id="rmodal" onclick="if(event.target===this)closeReport()">
@@ -660,11 +724,13 @@ function render(){
   document.getElementById('proj_count').textContent=projRecs.length+' unique projects · '+totMeet+' meetings';
   const pt=document.querySelector('#proj_tbl tbody');
   const sorted=projRecs.slice().sort((a,b)=>(b.r.size||0)-(a.r.size||0));
+  window.PROJ_ALL=sorted; // save full sorted list for search filter
   pt.innerHTML=sorted.length?sorted.map((p,i)=>{
     const r=p.r,calls=p.rows.reduce((s,x)=>s+(x.callLog?x.callLog.length:0),0);
     const ph=(p.rows.map(x=>x.hoto).filter(Boolean).sort()[0])||'';
     return `<tr class="proj-row" data-i="${i}"><td><span class="caret">▶</span></td><td>${nu(r.city)}</td><td>${nu(r.bdm)}</td>
-      <td><b>${nu(r.proj)}</b></td><td class="num">${r.size?fmt(r.size):'<span class="notupd">Not updated</span>'}</td>
+      <td><b class="proj-name-link" data-i="${i}" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;color:var(--b700);" title="Click to view journey summary">${nu(r.proj)}</b></td>
+      <td class="num">${r.size?fmt(r.size):'<span class="notupd">Not updated</span>'}</td>
       <td><span class="pill ${statusClass(r.pstat)}">${(r.pstat||'').replace('Meeting ','')||'—'}</span></td>
       <td>${ph?`<span class="pill st-conf">${ph}</span>`:'<span class="notupd">Not updated</span>'}</td>
       <td>${nu(r.ms)}</td><td>${nu(r.me)}</td><td>${nu(r.cat)}</td><td>${nu(r.label)}</td>
@@ -673,6 +739,7 @@ function render(){
   }).join(''):'<tr><td colspan=15 class=empty>No projects match the current filters</td></tr>';
   pt.querySelectorAll('.proj-row').forEach(tr=>tr.onclick=e=>{
     if(e.target.classList.contains('callbtn'))return;
+    if(e.target.classList.contains('proj-name-link')){openJourney(parseInt(e.target.dataset.i));return;}
     const i=tr.dataset.i,car=tr.querySelector('.caret');
     if(tr.dataset.open){document.querySelectorAll(`#proj_tbl .task-row[data-pi="${i}"]`).forEach(x=>x.remove());tr.removeAttribute('data-open');car.classList.remove('open');return;}
     const p=window.PROJ[i];let h='';
@@ -688,6 +755,8 @@ function render(){
     tr.insertAdjacentHTML('afterend',h);tr.dataset.open=1;car.classList.add('open');
   });
   pt.querySelectorAll('.callbtn:not([disabled])').forEach(b=>b.onclick=e=>{e.stopPropagation();openModal(window.PROJ[b.dataset.i]);});
+  // re-apply any active search filter
+  filterProjTable();
 
   syncFilterUI();renderChip();
   DRILL=[];
@@ -886,7 +955,154 @@ function openModal(p){
   document.getElementById('modal').classList.add('show');
 }
 function closeModal(){document.getElementById('modal').classList.remove('show');}
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeJourney();}});
+
+// ── Project-wise table: local name search (does not affect dashboard filters) ──
+function filterProjTable(){
+  const q=(document.getElementById('proj_search')||{}).value||'';
+  const hint=document.getElementById('proj_search_hint');
+  const x=document.getElementById('proj_search_x');
+  if(x)x.style.display=q?'block':'none';
+  const rows=document.querySelectorAll('#proj_tbl tbody tr.proj-row');
+  if(!q){rows.forEach(r=>r.style.display='');if(hint)hint.textContent='';return;}
+  const ql=q.toLowerCase();let shown=0;
+  rows.forEach(r=>{
+    // also remove any open task sub-rows when filtering
+    const i=r.dataset.i;
+    document.querySelectorAll(`#proj_tbl .task-row[data-pi="${i}"]`).forEach(x=>x.remove());
+    r.removeAttribute('data-open');
+    const car=r.querySelector('.caret');if(car)car.classList.remove('open');
+    const projName=(r.querySelector('.proj-name-link')||{}).textContent||'';
+    const match=projName.toLowerCase().includes(ql);
+    r.style.display=match?'':'none';
+    if(match)shown++;
+  });
+  if(hint)hint.textContent=shown?shown+' match'+(shown>1?'es':''):'No matches';
+}
+function clearProjSearch(){
+  const el=document.getElementById('proj_search');if(el){el.value='';el.focus();}
+  filterProjTable();
+}
+
+// ── Journey Summary popup ──
+function daysBetween(a,b){if(!a||!b)return null;const d=ms=>new Date(ms+' 00:00:00').getTime();const diff=(d(b)-d(a))/(1000*60*60*24);return Math.round(diff);}
+function fmtD(iso){if(!iso)return'—';const d=new Date(iso+' 00:00:00');return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}
+function fmtDelta(days){if(days===null)return'';if(days===0)return'Same day';if(days===1)return'1 day later';return days+' days later';}
+
+function openJourney(idx){
+  const p=window.PROJ[idx];if(!p)return;
+  const rows=p.rows.slice().sort((a,b)=>(a.ms||'').localeCompare(b.ms||''));
+  const rep=p.r;
+
+  // Collect key dates
+  const firstMs=rows[0]?.ms||'';
+  const lastRow=rows[rows.length-1];
+  const hoto=(rows.map(r=>r.hoto).filter(Boolean).sort()[0])||'';
+  const wonDate=(rows.map(r=>r.wonM?r.me||r.ms:null).filter(Boolean).sort().pop())||'';
+  const finalStatus=rep.pstat||'';
+  const isWonP=isWon(finalStatus);
+  const isLost=/Not interested/.test(finalStatus);
+
+  // Summary KPIs
+  const totalMeetings=rows.length;
+  const freshCount=rows.filter(r=>r.ftype==='Fresh Meeting').length;
+  const fuCount=rows.filter(r=>r.ftype==='Follow-up Meeting').length;
+  const totalDays=daysBetween(firstMs, hoto||lastRow?.me||lastRow?.ms||'');
+  const saleToDays=daysBetween(firstMs, wonDate||'');
+  const hotoToSaleDays=(wonDate&&hoto)?daysBetween(wonDate,hoto):null;
+
+  // Build summary bar
+  const kpis=[
+    {v:totalMeetings,k:'Meetings'},
+    {v:freshCount,k:'Fresh'},
+    {v:fuCount,k:'Follow-up'},
+    {v:totalDays!==null?totalDays+'d':'—',k:'Total days'},
+  ];
+  if(isWonP&&saleToDays!==null)kpis.push({v:saleToDays+'d',k:'Days to sale'});
+  if(hotoToSaleDays!==null)kpis.push({v:hotoToSaleDays+'d',k:'HOTO lag'});
+
+  const summaryHtml=`<div class="jrny-summary">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
+      <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#8fc0fd;">Lead Journey Summary</span>
+    </div>
+    <div class="jrny-summary-grid">${kpis.map(k=>`<div class="jrny-summary-kpi"><span class="sv">${k.v}</span><span class="sk">${k.k}</span></div>`).join('')}</div>
+    ${rep.cat||rep.label?`<div class="jrny-callout">
+      ${rep.cat?`<span style="margin-right:12px;">📂 Category: <b style="color:#fff;">${rep.cat}</b></span>`:''}
+      ${rep.label?`<span>🏷 Label: <b style="color:#fff;">${rep.label}</b></span>`:''}
+    </div>`:''}
+  </div>`;
+
+  // Build timeline steps
+  let steps='';
+  let prevDate='';
+
+  rows.forEach((r,i)=>{
+    const isFresh=r.ftype==='Fresh Meeting';
+    const isF=r.ftype==='Follow-up Meeting';
+    const statText=(r.fstat||'').replace('Meeting ','').replace('completed ','');
+    const isWonRow=/Sale Done/.test(r.fstat);
+    const isLostRow=/Not interested/.test(r.fstat);
+    const isPending=!r.me;
+    let stepCls=isFresh?'step-fresh':isF?'step-fu':'step-fu';
+    if(isWonRow)stepCls='step-won';
+    else if(isLostRow)stepCls='step-lost';
+    else if(isPending)stepCls='step-pending';
+
+    const typeLabel=isFresh?'Fresh Meeting '+(i+1):isF?'Follow-up Meeting '+(i+1-freshCount):'Meeting '+(i+1);
+    const delay=prevDate&&r.ms?daysBetween(prevDate,r.ms):null;
+    prevDate=r.me||r.ms||prevDate;
+
+    // Status pill
+    const statBg=isWonRow?'#e7f6ee':isLostRow?'#fdecea':'#eaf1fd';
+    const statCol=isWonRow?'var(--green)':isLostRow?'var(--red)':'var(--b700)';
+    const statPill=`<span style="background:${statBg};color:${statCol};font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;">${statText||'Pending'}</span>`;
+
+    // Duration of this meeting
+    const meetDays=r.ms&&r.me?daysBetween(r.ms,r.me):null;
+
+    steps+=`<div class="jrny-step ${stepCls}">
+      <div class="jrny-dot"></div>
+      <div class="jrny-card">
+        <div class="jrny-label">${typeLabel}${delay!==null?` <span style="font-size:10px;font-weight:400;color:var(--muted);">(+${delay}d since last)</span>`:''}</div>
+        <div class="jrny-row">
+          ${r.ms?`<span class="jrny-kv"><span class="jrny-k">Scheduled</span><span class="jrny-sep">·</span><span class="jrny-v">${fmtD(r.ms)}</span></span>`:''}
+          ${r.ms?'<span class="jrny-sep">→</span>':''}
+          ${r.me?`<span class="jrny-kv"><span class="jrny-k">Completed</span><span class="jrny-sep">·</span><span class="jrny-v">${fmtD(r.me)}</span></span>`:`<span style="color:var(--muted);font-size:11px;">Not completed</span>`}
+          ${meetDays!==null?`<span class="jrny-days">⏱ ${meetDays}d</span>`:''}
+        </div>
+        <div class="jrny-row" style="margin-top:6px;">
+          <span class="jrny-kv"><span class="jrny-k">Status</span><span class="jrny-sep">·</span>${statPill}</span>
+          ${r.nfu?`<span class="jrny-sep">·</span><span class="jrny-kv"><span class="jrny-k">Next follow-up</span><span class="jrny-sep">·</span><span class="jrny-v">${fmtD(r.nfu)}</span></span>`:''}
+        </div>
+        ${r.callLatest?`<div style="margin-top:7px;font-size:11.5px;color:var(--ink);background:rgba(0,0,0,.03);border-radius:7px;padding:6px 9px;">💬 ${r.callLatest}</div>`:''}
+      </div>
+    </div>`;
+  });
+
+  // HOTO step (if present)
+  if(hoto){
+    const hDelay=wonDate?daysBetween(wonDate,hoto):null;
+    steps+=`<div class="jrny-step step-hoto">
+      <div class="jrny-dot"></div>
+      <div class="jrny-card">
+        <div class="jrny-label">HOTO Done ${hDelay!==null?`<span style="font-size:10px;font-weight:400;color:var(--muted);">(+${hDelay}d after sale)</span>`:''}</div>
+        <div class="jrny-row">
+          <span class="jrny-kv"><span class="jrny-k">HOTO Date</span><span class="jrny-sep">·</span><span class="jrny-v">${fmtD(hoto)}</span></span>
+          ${totalDays!==null?`<span class="jrny-days">🏁 Total ${totalDays}d from first meeting</span>`:''}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // Open modal
+  document.getElementById('j_title').textContent=rep.proj||'Project Journey';
+  document.getElementById('j_sub').textContent=
+    `${rep.city||'—'} · ${rep.bdm||'—'} · ${rep.size?rep.size+' KW':'—'} · ${rep.lead||''}`;
+  document.getElementById('j_body').innerHTML=summaryHtml+`<div class="jrny-timeline">${steps}</div>`;
+  document.getElementById('jmodal').classList.add('show');
+}
+function closeJourney(){document.getElementById('jmodal').classList.remove('show');}
+
 
 // ===== DETAIL REPORTS (click a card or chart → drill-down popup) =====
 const REPORTS={
