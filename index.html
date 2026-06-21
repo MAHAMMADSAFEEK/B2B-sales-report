@@ -263,7 +263,6 @@
     <div class="hgrow"></div>
     <div id="whoami" class="whoami"></div>
     <button class="refresh" id="refreshbtn" onclick="refreshFromSheet()" title="Reload the latest data straight from the Google Sheet">↻ Refresh data</button>
-    <input type="file" id="refreshfile" accept=".csv,text/csv" style="display:none">
     <button class="refresh" onclick="clearFilters()">↺ Reset view</button>
     <button class="logout" id="logoutbtn" onclick="logout()">Log out</button>
   </header>
@@ -1137,13 +1136,6 @@ function refreshFromCSV(text){
   if(sub)sub.textContent='SOCIETY SOLAR PIPELINE · REFRESHED '+d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase();
   render();
 }
-document.getElementById('refreshfile').addEventListener('change',e=>{
-  const f=e.target.files[0];if(!f)return;
-  const rd=new FileReader();
-  rd.onload=()=>{refreshFromCSV(rd.result);e.target.value='';};
-  rd.onerror=()=>{alert('Could not read the file.');e.target.value='';};
-  rd.readAsText(f);
-});
 
 // ===== LIVE REFRESH FROM GOOGLE SHEET ("Meeting" tab) =====
 const SHEET_ID='1hKD3aGV2g-wEsTi_itQ20GAjPOH3-Xy9KuYwI8oxxKM';
@@ -1169,12 +1161,10 @@ async function refreshFromSheet(){
   }
   btn.textContent=old; btn.disabled=false;
   if(text){refreshFromCSV(text);return;}
-  // Could not reach the sheet (private / sign-in / CORS) → fall back to manual export
-  alert('Couldn\u2019t load directly from the Google Sheet ('+(lastErr||'blocked')+').\n\n'
-    +'This usually means the sheet isn\u2019t shared for link access. Two options:\n'
-    +'  1) In the sheet: Share \u2192 General access \u2192 \u201cAnyone with the link \u2192 Viewer\u201d, then try Refresh again.\n'
-    +'  2) Or pick a CSV you export from the Meeting tab now (File \u2192 Download \u2192 CSV).');
-  document.getElementById('refreshfile').click();
+  // Could not reach the sheet (private / sign-in / CORS)
+  alert('Couldn\u2019t load from the Google Sheet ('+(lastErr||'blocked')+').\n\n'
+    +'The dashboard reads the Meeting tab directly, so the sheet must be link-readable:\n'
+    +'In the sheet: Share \u2192 General access \u2192 \u201cAnyone with the link \u2192 Viewer\u201d, then click Refresh again.');
 }
 
 // Dashboard initialises only after a successful login
