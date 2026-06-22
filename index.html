@@ -175,6 +175,61 @@
   .flag.fresh{background:#e3f5ea;color:#15784e}
   .flag.fup{background:#fcf3d9;color:#9a6a06}
   .notupd{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:6px;background:#fdecea;color:#c0392b}
+
+  /* ── Sales Calendar ── */
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:12px;}
+  .cal-head{text-align:center;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);padding:6px 0;}
+  .cal-cell{min-height:88px;border:1px solid var(--line);border-radius:10px;padding:5px 6px;background:#fff;cursor:pointer;transition:box-shadow .15s;}
+  .cal-cell:hover{box-shadow:0 3px 14px rgba(21,84,184,.13);}
+  .cal-cell.today{border:2px solid var(--b500);background:var(--b50);}
+  .cal-cell.other-month{background:#f7f8fb;opacity:.5;cursor:default;}
+  .cal-cell.other-month:hover{box-shadow:none;}
+  .cal-daynum{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:3px;}
+  .cal-cell.today .cal-daynum{color:var(--b600);font-size:12px;}
+  .cal-badge{font-size:9.5px;font-weight:700;padding:1px 5px;border-radius:5px;display:block;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+  .cb-fresh{background:#dbeafe;color:#1554b8;}
+  .cb-fu{background:#e9d5ff;color:#6b21a8;}
+  .cb-won{background:#dcfce7;color:#166534;}
+  .cb-lost{background:#fee2e2;color:#991b1b;}
+  .cb-conf{background:#fef9c3;color:#854d0e;}
+  .cb-pend{background:#f1f5f9;color:#64748b;}
+  .cal-more{font-size:9px;color:var(--b600);font-weight:600;margin-top:1px;}
+  /* Calendar popup */
+  .cal-popup{position:fixed;inset:0;z-index:250;background:rgba(10,20,70,.6);display:flex;align-items:center;justify-content:center;padding:20px;}
+  .cal-popup-box{background:#fff;border-radius:18px;max-width:660px;width:100%;max-height:84vh;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,.35);}
+  .cal-popup-head{background:linear-gradient(115deg,var(--b900),var(--b700));color:#fff;border-radius:18px 18px 0 0;padding:18px 22px;display:flex;justify-content:space-between;align-items:flex-start;}
+  .cal-popup-body{overflow-y:auto;padding:16px 20px 20px;}
+  .cal-proj-card{border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:11px;border-left:4px solid var(--b400);}
+  .cal-proj-card.st-won{border-left-color:#1f9d6b;background:#f0fdf4;}
+  .cal-proj-card.st-lost{border-left-color:#d6493b;background:#fff5f5;}
+  .cal-proj-card.st-conf{border-left-color:#f5c430;background:#fffbeb;}
+  .cal-proj-card.st-fresh{border-left-color:#2f7bf4;background:#eff6ff;}
+  .cal-proj-card.st-fu{border-left-color:#9b6dff;background:#f5f3ff;}
+
+  /* ── Funnel Report ── */
+  .fr-mode-bar{display:flex;gap:4px;margin-bottom:16px;background:var(--b50);border-radius:10px;padding:4px;width:fit-content;}
+  .fr-mode-btn{padding:7px 18px;border-radius:8px;border:none;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--muted);background:transparent;transition:all .15s;}
+  .fr-mode-btn.active{background:var(--b600);color:#fff;}
+  .fr-table{width:100%;border-collapse:collapse;font-size:12px;}
+  .fr-table th{background:var(--b900);color:#fff;padding:9px 11px;text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;}
+  .fr-table th:first-child{text-align:left;}
+  .fr-table td{padding:8px 11px;border-bottom:1px solid var(--line);text-align:right;vertical-align:middle;}
+  .fr-table td:first-child{text-align:left;font-weight:600;}
+  .fr-table tr:last-child td{border-bottom:none;}
+  .fr-table tr:hover td{background:var(--b50);}
+  .fr-pct{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:99px;}
+  .fr-pct.hi{background:#dcfce7;color:#166534;}
+  .fr-pct.mid{background:#fef9c3;color:#854d0e;}
+  .fr-pct.lo{background:#fee2e2;color:#991b1b;}
+  .fr-cell-clk{cursor:pointer;text-decoration:underline;text-underline-offset:2px;color:var(--b700);}
+  /* ── Aging in Sale Won ── */
+  .ag-table{width:100%;border-collapse:collapse;font-size:12px;}
+  .ag-table th{background:var(--b900);color:#fff;padding:9px 12px;text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.4px;}
+  .ag-table th:first-child,.ag-table th:nth-child(2){text-align:left;}
+  .ag-table td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:right;}
+  .ag-table td:first-child,.ag-table td:nth-child(2){text-align:left;font-weight:600;}
+  .ag-table tr:hover td{background:var(--b50);}
+  .ag-table tr:last-child td{border:none;}
   .funnelcard{border:1px solid var(--line);border-radius:11px;padding:14px 16px;margin-bottom:13px}
   .funnelcard h5{font-size:14px;color:var(--b900);margin-bottom:8px}
   .fmini{display:flex;flex-direction:column;gap:4px}
@@ -285,7 +340,7 @@
 <body>
 <div id="login">
   <div class="login-card">
-    <div class="llogo"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5" fill="#1554b8"/><rect x="14" y="3" width="7" height="7" rx="1.5" fill="#2f7bf4"/><rect x="3" y="14" width="7" height="7" rx="1.5" fill="#2f7bf4"/><rect x="14" y="14" width="7" height="7" rx="1.5" fill="#1554b8"/></svg></div>
+    <div class="llogo"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2rP2rpzHaGVMqgjZvGiLuzn9jTxvUz2CAUA&s" style="width:44px;height:44px;object-fit:contain;" onerror="this.style.display='none'"></div>
     <h2><span>BDM</span> Dashboard Login</h2>
     <div class="lsub">Sign in with your SolarSquare email to view your pipeline.</div>
     <div class="lerr" id="lerr">Invalid email or password. Please try again.</div>
@@ -297,7 +352,7 @@
 </div>
 <div class="wrap">
   <header class="top">
-    <div class="logo"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5" fill="#1554b8"/><rect x="14" y="3" width="7" height="7" rx="1.5" fill="#2f7bf4"/><rect x="3" y="14" width="7" height="7" rx="1.5" fill="#2f7bf4"/><rect x="14" y="14" width="7" height="7" rx="1.5" fill="#1554b8"/></svg></div>
+    <div class="logo" style="background:#fff;padding:4px;overflow:hidden;"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2rP2rpzHaGVMqgjZvGiLuzn9jTxvUz2CAUA&s" style="width:44px;height:44px;object-fit:contain;" onerror="this.style.display='none'"></div>
     <div><h1><span>BDM</span> Sales Dashboard</h1><div class="sub">SOCIETY SOLAR PIPELINE · UPDATED 20 JUN 2026</div></div>
     <div class="hgrow"></div>
     <div id="whoami" class="whoami"></div>
@@ -318,6 +373,8 @@
     <button class="tab" data-tab="journey">Lead Journey</button>
     <button class="tab" data-tab="salewon" style="background:linear-gradient(90deg,#1a7a4a,#1f9d6b);color:#fff;">🏆 Sale Won</button>
     <button class="tab" data-tab="notint" style="background:linear-gradient(90deg,#8b1a1a,#d6493b);color:#fff;">❌ Not Interested</button>
+    <button class="tab" data-tab="calendar" style="background:linear-gradient(90deg,#1554b8,#2f7bf4);color:#fff;">📅 Sales Calendar</button>
+    <button class="tab" data-tab="funnelrpt" style="background:linear-gradient(90deg,#5b2d8e,#9b6dff);color:#fff;">🔻 Funnel Report</button>
   </div>
 
   <!-- OVERVIEW TAB -->
@@ -548,6 +605,45 @@
         <th>Won Date</th><th>HOTO Date</th><th>Days to Win</th><th>HOTO Lag</th><th>Meetings</th><th>Payment</th><th>Category</th><th>Stage / Reason</th>
       </tr></thead><tbody id="sw-tbody"></tbody></table></div>
     </div>
+
+    <!-- AGING REPORT inside Sale Won -->
+    <div class="card" style="margin-top:14px;">
+      <h3>📊 Aging Report — Days to Sale Won</h3>
+      <div class="hint">First meeting date → Sale Won date · click any row to see those projects</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;">
+        <!-- Table 1: Followup count buckets -->
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--b700);margin-bottom:8px;">By Number of Follow-ups</div>
+          <table class="ag-table"><thead><tr>
+            <th style="text-align:left;">Follow-ups</th><th style="text-align:left;">Stage</th>
+            <th>Leads</th><th>Total KW</th><th>Avg Days</th>
+          </tr></thead><tbody id="ag-fu-body"></tbody></table>
+        </div>
+        <!-- Table 2: Days-to-win buckets -->
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--b700);margin-bottom:8px;">By Days to Close</div>
+          <table class="ag-table"><thead><tr>
+            <th style="text-align:left;">Duration</th>
+            <th>Leads</th><th>Total KW</th><th>HOTO Done</th>
+          </tr></thead><tbody id="ag-days-body"></tbody></table>
+        </div>
+      </div>
+      <!-- Chart -->
+      <div style="margin-top:16px;position:relative;height:180px;">
+        <canvas id="ag-chart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Aging popup -->
+  <div class="cal-popup" id="ag-popup" style="display:none;" onclick="if(event.target===this)closeAgPopup()">
+    <div class="cal-popup-box" style="max-width:700px;">
+      <div class="cal-popup-head" style="background:linear-gradient(115deg,#0b2a14,#1f9d6b);">
+        <div><div style="font-size:16px;font-weight:800;" id="ag-popup-title"></div><div style="font-size:12px;color:#9fdfbf;margin-top:3px;" id="ag-popup-sub"></div></div>
+        <button onclick="closeAgPopup()" style="background:transparent;border:none;color:#9fdfbf;font-size:24px;cursor:pointer;line-height:1;">×</button>
+      </div>
+      <div class="cal-popup-body" id="ag-popup-body"></div>
+    </div>
   </div>
 
   <!-- NOT INTERESTED TAB -->
@@ -602,6 +698,100 @@
         <th>#</th><th>Project</th><th>City</th><th>BDM</th><th>Size KW</th>
         <th>Last Meeting</th><th>Meetings</th><th>Loss Reason (AO)</th><th>Category</th><th>Last Call Note</th>
       </tr></thead><tbody id="ni-tbody"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- SALES CALENDAR TAB -->
+  <div id="tab-calendar" style="display:none">
+    <div class="card" style="margin-bottom:14px;">
+      <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;">
+        <div>
+          <div style="font-size:22px;font-weight:800;letter-spacing:.2px;">📅 Sales Calendar</div>
+          <div class="hint">Meetings scheduled per day · click any date to see project details</div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-left:auto;align-items:flex-end;">
+          <div id="cal-bdm-wrap" style="display:flex;flex-direction:column;gap:3px;">
+            <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);">BDM</label>
+            <select id="cal-f-bdm" onchange="renderCalendar()" style="font-size:12px;padding:6px 24px 6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--b50);color:var(--ink);outline:none;min-width:150px;"></select>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:3px;">
+            <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);">Month</label>
+            <select id="cal-f-month" onchange="renderCalendar()" style="font-size:12px;padding:6px 24px 6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--b50);color:var(--ink);outline:none;min-width:150px;"></select>
+          </div>
+          <button onclick="calPrevMonth()" style="padding:7px 13px;border:1px solid var(--line);border-radius:8px;background:var(--b50);color:var(--ink);font-size:14px;cursor:pointer;">‹</button>
+          <button onclick="calNextMonth()" style="padding:7px 13px;border:1px solid var(--line);border-radius:8px;background:var(--b50);color:var(--ink);font-size:14px;cursor:pointer;">›</button>
+          <button onclick="clearCalFilters()" style="padding:7px 13px;border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--muted);font-size:12px;cursor:pointer;">✕ Clear</button>
+        </div>
+      </div>
+      <!-- Legend -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;font-size:11px;">
+        <span style="display:flex;align-items:center;gap:4px;"><span class="cal-badge cb-fresh" style="display:inline-block;width:12px;height:12px;border-radius:3px;padding:0;"></span>Fresh Meeting</span>
+        <span style="display:flex;align-items:center;gap:4px;"><span class="cal-badge cb-fu" style="display:inline-block;width:12px;height:12px;border-radius:3px;padding:0;"></span>Follow-up</span>
+        <span style="display:flex;align-items:center;gap:4px;"><span class="cal-badge cb-won" style="display:inline-block;width:12px;height:12px;border-radius:3px;padding:0;"></span>Sale Done</span>
+        <span style="display:flex;align-items:center;gap:4px;"><span class="cal-badge cb-lost" style="display:inline-block;width:12px;height:12px;border-radius:3px;padding:0;"></span>Not Interested</span>
+        <span style="display:flex;align-items:center;gap:4px;"><span class="cal-badge cb-conf" style="display:inline-block;width:12px;height:12px;border-radius:3px;padding:0;"></span>Confirmed/Scheduled</span>
+        <span style="display:flex;align-items:center;gap:4px;"><span class="cal-badge cb-pend" style="display:inline-block;width:12px;height:12px;border-radius:3px;padding:0;"></span>Other</span>
+      </div>
+      <!-- Calendar grid -->
+      <div id="cal-grid-wrap" style="margin-top:8px;"></div>
+    </div>
+    <!-- Summary stats below calendar -->
+    <div id="cal-stats-row" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px;"></div>
+  </div>
+
+  <!-- Calendar day popup -->
+  <div class="cal-popup" id="cal-popup" style="display:none;" onclick="if(event.target===this)closeCalPopup()">
+    <div class="cal-popup-box">
+      <div class="cal-popup-head">
+        <div><div style="font-size:16px;font-weight:800;" id="cal-popup-date"></div><div style="font-size:12px;color:#cfe0ff;margin-top:3px;" id="cal-popup-sub"></div></div>
+        <button onclick="closeCalPopup()" style="background:transparent;border:none;color:#cfe0ff;font-size:24px;cursor:pointer;line-height:1;">×</button>
+      </div>
+      <div class="cal-popup-body" id="cal-popup-body"></div>
+    </div>
+  </div>
+
+  <!-- FUNNEL REPORT TAB -->
+  <div id="tab-funnelrpt" style="display:none">
+    <div style="background:linear-gradient(115deg,#2d1b5e,#5b2d8e,#9b6dff);border-radius:14px;padding:22px 28px;margin-bottom:18px;color:#fff;display:flex;flex-wrap:wrap;gap:20px;align-items:center;">
+      <div>
+        <div style="font-size:22px;font-weight:800;letter-spacing:.2px;">🔻 Funnel Report</div>
+        <div style="font-size:12px;color:#d5c2ff;margin-top:4px;">Current month scheduling · completion · conversions by group</div>
+      </div>
+      <div id="fr-summary-kpis" style="display:flex;gap:18px;flex-wrap:wrap;margin-left:auto;"></div>
+    </div>
+    <!-- Filters -->
+    <div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+      <div style="display:flex;flex-direction:column;gap:3px;">
+        <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);">Month</label>
+        <select id="fr-f-month" onchange="renderFunnelRpt()" style="font-size:12px;padding:6px 24px 6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--b50);color:var(--ink);outline:none;min-width:150px;"></select>
+      </div>
+      <button onclick="clearFRFilters()" style="padding:7px 14px;border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--muted);font-size:12px;cursor:pointer;height:33px;align-self:flex-end;">✕ Clear</button>
+    </div>
+    <!-- Dimension tabs -->
+    <div class="fr-mode-bar" id="fr-mode-bar">
+      <button class="fr-mode-btn active" onclick="setFRMode('bdm',this)">👤 BDM-wise</button>
+      <button class="fr-mode-btn" onclick="setFRMode('city',this)">🏙 City-wise</button>
+      <button class="fr-mode-btn" onclick="setFRMode('month',this)">📅 Monthly</button>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div style="padding:14px 18px 10px;border-bottom:1px solid var(--line);">
+        <h3 style="margin:0;" id="fr-table-title">BDM-wise Funnel</h3>
+        <div class="hint" style="margin-top:3px;">Click any cell value to see those projects · Conversion = of this month's scheduled leads</div>
+      </div>
+      <div class="ptable-wrap" style="max-height:68vh;overflow:auto;" id="fr-table-wrap">
+        <table class="fr-table"><thead id="fr-thead"></thead><tbody id="fr-tbody"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Funnel report project popup (reuse cal-popup style) -->
+  <div class="cal-popup" id="fr-popup" style="display:none;" onclick="if(event.target===this)closeFRPopup()">
+    <div class="cal-popup-box" style="max-width:700px;">
+      <div class="cal-popup-head">
+        <div><div style="font-size:16px;font-weight:800;" id="fr-popup-title"></div><div style="font-size:12px;color:#cfe0ff;margin-top:3px;" id="fr-popup-sub"></div></div>
+        <button onclick="closeFRPopup()" style="background:transparent;border:none;color:#cfe0ff;font-size:24px;cursor:pointer;line-height:1;">×</button>
+      </div>
+      <div class="cal-popup-body" id="fr-popup-body"></div>
     </div>
   </div>
 
@@ -1395,9 +1585,13 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
   document.getElementById('tab-journey').style.display=tab==='journey'?'':'none';
   document.getElementById('tab-salewon').style.display=tab==='salewon'?'':'none';
   document.getElementById('tab-notint').style.display=tab==='notint'?'':'none';
+  document.getElementById('tab-calendar').style.display=tab==='calendar'?'':'none';
+  document.getElementById('tab-funnelrpt').style.display=tab==='funnelrpt'?'':'none';
   if(tab==='overview')Object.values(charts).forEach(c=>c&&c.resize());
   if(tab==='salewon')renderSaleWon();
   if(tab==='notint')renderNotInt();
+  if(tab==='calendar')renderCalendar();
+  if(tab==='funnelrpt')renderFunnelRpt();
 });
 
 // ===== ACCESS CONTROL — credential login (User_Setting sheet) =====
@@ -2095,6 +2289,435 @@ function renderNotInt(){
 }
 function clearNIFilters(){['ni-f-city','ni-f-bdm','ni-f-reason'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});renderNotInt();}
 
+
+function clearNIFilters(){['ni-f-city','ni-f-bdm','ni-f-reason'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});renderNotInt();}
+
+// ═══════════════════════════════════════════════════════════════
+//  SALES CALENDAR
+// ═══════════════════════════════════════════════════════════════
+const MON_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const WDAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+let _calYM={y:new Date(TODAY_UTC).getUTCFullYear(),m:new Date(TODAY_UTC).getUTCMonth()};
+
+function calIsoKey(d){return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');}
+function calMeetClass(r){
+  const s=(r.fstat||'').toLowerCase();
+  if(s.includes('sale done'))return 'cb-won';
+  if(s.includes('not interested'))return 'cb-lost';
+  if(s.includes('confirmed')||s.includes('re-scheduled'))return 'cb-conf';
+  if(s.includes('completed'))return r.ftype==='Follow-up Meeting'?'cb-fu':'cb-fresh';
+  return r.ftype==='Follow-up Meeting'?'cb-fu':'cb-fresh';
+}
+function calCardClass(r){
+  const s=(r.fstat||'').toLowerCase();
+  if(s.includes('sale done'))return 'st-won';
+  if(s.includes('not interested'))return 'st-lost';
+  if(s.includes('confirmed'))return 'st-conf';
+  return r.ftype==='Follow-up Meeting'?'st-fu':'st-fresh';
+}
+
+function renderCalendar(){
+  const rows=applyFilters();
+  // Populate BDM filter (hide for BDM role)
+  const bdmWrap=document.getElementById('cal-bdm-wrap');
+  const isBDM=VIEWER.role==='bdm';
+  if(bdmWrap)bdmWrap.style.display=isBDM?'none':'flex';
+  const fBDM=isBDM?VIEWER.name:(document.getElementById('cal-f-bdm')||{}).value||'';
+
+  // Fill BDM dropdown
+  const bdms=[...new Set(rows.map(r=>r.bdm).filter(Boolean))].sort();
+  const bdmSel=document.getElementById('cal-f-bdm');
+  if(bdmSel&&!isBDM){
+    const cur=bdmSel.value;bdmSel.innerHTML='<option value="">All BDMs</option>';
+    bdms.forEach(b=>{const o=document.createElement('option');o.value=b;o.textContent=b;if(b===cur)o.selected=true;bdmSel.appendChild(o);});
+  }
+
+  // Fill month dropdown from all scheduled dates
+  const monthSet=new Set();
+  rows.forEach(r=>{if(r.ms&&r.ms.length>=7)monthSet.add(r.ms.slice(0,7));});
+  const monthKeys=[...monthSet].sort();
+  const mSel=document.getElementById('cal-f-month');
+  if(mSel){
+    const cur=mSel.value;mSel.innerHTML='';
+    monthKeys.forEach(k=>{const[y,mo]=k.split('-');const o=document.createElement('option');o.value=k;o.textContent=MON_NAMES[+mo-1]+' '+y;mSel.appendChild(o);if(k===cur)o.selected=true;});
+    if(!cur||!monthKeys.includes(cur)){
+      // Default to current or nearest month
+      const todayKey=new Date(TODAY_UTC).toISOString().slice(0,7);
+      const nearest=monthKeys.includes(todayKey)?todayKey:(monthKeys[monthKeys.length-1]||monthKeys[0]);
+      if(nearest)mSel.value=nearest;
+    }
+  }
+  const monthVal=(mSel&&mSel.value)||monthKeys[monthKeys.length-1]||'';
+  if(!monthVal){document.getElementById('cal-grid-wrap').innerHTML='<div class="empty">No meeting data available</div>';return;}
+  const[yy,mm]=monthVal.split('-').map(Number);
+  _calYM={y:yy,m:mm-1};
+
+  // Filter rows to this month + BDM
+  const calRows=rows.filter(r=>{
+    if(!r.ms||r.ms.slice(0,7)!==monthVal)return false;
+    if(fBDM&&r.bdm!==fBDM)return false;
+    return true;
+  });
+
+  // Index by date
+  const byDate={};
+  calRows.forEach(r=>{const k=r.ms.slice(0,10);(byDate[k]=byDate[k]||[]).push(r);});
+
+  // Build calendar grid
+  const firstDay=new Date(Date.UTC(yy,mm-1,1));
+  const daysInMonth=new Date(Date.UTC(yy,mm,0)).getUTCDate();
+  const startDow=firstDay.getUTCDay();
+  const todayISO=new Date(TODAY_UTC).toISOString().slice(0,10);
+
+  let html='<div class="cal-grid">';
+  WDAYS.forEach(d=>html+=`<div class="cal-head">${d}</div>`);
+  for(let i=0;i<startDow;i++)html+='<div class="cal-cell other-month"></div>';
+  for(let d=1;d<=daysInMonth;d++){
+    const iso=yy+'-'+String(mm).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const dayRows=byDate[iso]||[];
+    const isToday=iso===todayISO;
+    const maxShow=3;
+    let badges=dayRows.slice(0,maxShow).map(r=>{
+      const cls=calMeetClass(r);
+      const lbl=r.proj?r.proj.slice(0,18):r.ftype==='Follow-up Meeting'?'Follow-up':'Fresh';
+      return `<span class="cal-badge ${cls}">${lbl}</span>`;
+    }).join('');
+    if(dayRows.length>maxShow)badges+=`<div class="cal-more">+${dayRows.length-maxShow} more</div>`;
+    const clickable=dayRows.length?`onclick="openCalPopup('${iso}')" `:'';
+    html+=`<div class="cal-cell ${isToday?'today':''}" ${clickable}style="${dayRows.length?'':'cursor:default;'}">
+      <div class="cal-daynum">${d}</div>${badges}</div>`;
+  }
+  // Fill remaining cells
+  const totalCells=startDow+daysInMonth;const rem=7-totalCells%7;
+  if(rem<7)for(let i=0;i<rem;i++)html+='<div class="cal-cell other-month"></div>';
+  html+='</div>';
+  document.getElementById('cal-grid-wrap').innerHTML=html;
+
+  // Stats row
+  const total=calRows.length;
+  const fresh=calRows.filter(r=>r.ftype==='Fresh Meeting').length;
+  const fu=calRows.filter(r=>r.ftype==='Follow-up Meeting').length;
+  const completed=calRows.filter(r=>(r.me||'').slice(0,7)===monthVal).length;
+  const won=calRows.filter(r=>(r.fstat||'').includes('Sale Done')).length;
+  const kpi=(v,l,c)=>`<div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;"><div style="font-size:24px;font-weight:800;color:${c};">${v}</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);">${l}</div></div>`;
+  document.getElementById('cal-stats-row').innerHTML=
+    kpi(total,'Meetings Scheduled','var(--b700)')+
+    kpi(fresh,'Fresh Meetings','#2f7bf4')+
+    kpi(fu,'Follow-ups','#9b6dff')+
+    kpi(completed,'Completed','var(--green)')+
+    kpi(won,'Sale Won','#1f9d6b');
+
+  // Store for popup
+  window._calByDate=byDate;
+}
+
+function openCalPopup(iso){
+  const rows=window._calByDate?.[iso]||[];
+  if(!rows.length)return;
+  const[y,m,d]=iso.split('-').map(Number);
+  const dateLabel=new Date(Date.UTC(y,m-1,d)).toLocaleDateString('en-IN',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  document.getElementById('cal-popup-date').textContent=dateLabel;
+  document.getElementById('cal-popup-sub').textContent=rows.length+' meeting'+(rows.length>1?'s':'')+' scheduled';
+  const fmtD=iso=>iso?new Date(iso+' 00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'—';
+  document.getElementById('cal-popup-body').innerHTML=rows.map(r=>{
+    const cls=calCardClass(r);
+    const stat=(r.fstat||'').replace('Meeting ','');
+    const statCol=stat.includes('Sale Done')?'#1f9d6b':stat.includes('Not interested')?'#d6493b':stat.includes('completed')?'var(--b600)':'var(--muted)';
+    return `<div class="cal-proj-card ${cls}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+        <div style="font-size:14px;font-weight:700;color:var(--ink);">${r.proj||'—'}</div>
+        <span style="font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:999px;background:${statCol}22;color:${statCol};white-space:nowrap;">${stat||'—'}</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;font-size:12px;">
+        <span style="color:var(--muted);">👤 <b style="color:var(--ink);">${r.bdm||'—'}</b></span>
+        <span style="color:var(--muted);">🏙 <b style="color:var(--ink);">${r.city||'—'}</b></span>
+        <span style="color:var(--muted);">⚡ <b style="color:var(--ink);">${r.size?r.size+' KW':'—'}</b></span>
+        <span style="color:var(--muted);">📋 <b style="color:var(--ink);">${r.ftype||'—'}</b></span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;font-size:12px;">
+        <span style="color:var(--muted);">📅 Scheduled: <b style="color:var(--ink);">${fmtD(r.ms)}</b></span>
+        <span style="color:var(--muted);">✅ Completed: <b style="color:var(--ink);">${r.me?fmtD(r.me):'Pending'}</b></span>
+        ${r.hoto?`<span style="color:var(--muted);">🤝 HOTO: <b style="color:#1f9d6b;">${fmtD(r.hoto)}</b></span>`:''}
+      </div>
+      ${r.cat||r.label?`<div style="display:flex;gap:8px;margin-top:6px;font-size:11px;color:var(--muted);">${r.cat?`<span>📂 ${r.cat}</span>`:''}${r.label?`<span>🏷 ${r.label}</span>`:''}</div>`:''}
+      ${r.callLatest?`<div style="margin-top:7px;font-size:11.5px;color:var(--ink);background:rgba(0,0,0,.04);border-radius:7px;padding:6px 9px;">💬 ${r.callLatest}</div>`:''}
+    </div>`;
+  }).join('');
+  document.getElementById('cal-popup').style.display='flex';
+}
+function closeCalPopup(){document.getElementById('cal-popup').style.display='none';}
+function calPrevMonth(){
+  const sel=document.getElementById('cal-f-month');if(!sel)return;
+  const opts=[...sel.options];const ci=opts.findIndex(o=>o.selected);
+  if(ci>0){sel.selectedIndex=ci-1;renderCalendar();}
+}
+function calNextMonth(){
+  const sel=document.getElementById('cal-f-month');if(!sel)return;
+  const opts=[...sel.options];const ci=opts.findIndex(o=>o.selected);
+  if(ci<opts.length-1){sel.selectedIndex=ci+1;renderCalendar();}
+}
+function clearCalFilters(){
+  const b=document.getElementById('cal-f-bdm');if(b)b.value='';
+  renderCalendar();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  AGING REPORT (inside Sale Won)
+// ═══════════════════════════════════════════════════════════════
+let _agChart=null;
+const AG_DAY_BUCKETS=[
+  {label:'1 day',fn:d=>d<=1},
+  {label:'2 days',fn:d=>d===2},
+  {label:'3–5 days',fn:d=>d>=3&&d<=5},
+  {label:'6–10 days',fn:d=>d>=6&&d<=10},
+  {label:'11–20 days',fn:d=>d>=11&&d<=20},
+  {label:'21–30 days',fn:d=>d>=21&&d<=30},
+  {label:'31–60 days',fn:d=>d>=31&&d<=60},
+  {label:'2–6 months',fn:d=>d>=61&&d<=180},
+  {label:'> 6 months',fn:d=>d>180}
+];
+
+function renderAgingReport(data){
+  // data = result of getSaleWonLeads() (already filtered)
+  const byLead=data;
+
+  // Table 1: by follow-up count (0 = just fresh, 1 = 1 followup, ..., >10)
+  const fuBuckets=[];
+  for(let i=0;i<=10;i++)fuBuckets.push({label:i===0?'Fresh only (0 F/U)':i===10?'10 F/U':'F/U '+i,min:i,max:i,rows:[]});
+  fuBuckets.push({label:'> 10 F/U',min:11,max:999,rows:[]});
+  byLead.forEach(x=>{
+    const fuCount=x.rows.filter(r=>r.ftype==='Follow-up Meeting').length;
+    const bucket=fuBuckets.find(b=>fuCount>=b.min&&fuCount<=b.max)||fuBuckets[fuBuckets.length-1];
+    bucket.rows.push(x);
+  });
+  const fuBody=document.getElementById('ag-fu-body');
+  if(fuBody)fuBody.innerHTML=fuBuckets.filter(b=>b.rows.length).map(b=>{
+    const kw=b.rows.reduce((s,x)=>s+(x.size||0),0);
+    const days=b.rows.filter(x=>x.d2won!==null).map(x=>x.d2won);
+    const avg=days.length?Math.round(days.reduce((a,b)=>a+b,0)/days.length):null;
+    const label=b.label;
+    return `<tr onclick="openAgPopup('fu','${b.min}-${b.max}',${JSON.stringify(b.rows.map(r=>r.id)).replace(/"/g,"'")})" style="cursor:pointer;">
+      <td class="fr-cell-clk">${label}</td>
+      <td style="text-align:left;">${b.rows[0]?((b.rows[b.rows.length-1].rows||[]).filter(r=>r.ftype==='Follow-up Meeting').length===0?'Fresh → Won':b.rows[0].meetings+' meetings'):'—'}</td>
+      <td>${b.rows.length}</td>
+      <td>${Math.round(kw).toLocaleString('en-IN')}</td>
+      <td>${avg!==null?`<span style="background:#eaf1fd;color:#1554b8;font-size:11px;padding:1px 7px;border-radius:99px;font-weight:700;">${avg}d</span>`:'—'}</td>
+    </tr>`;
+  }).join('');
+
+  // Table 2: by days-to-win
+  const dayBuckets=AG_DAY_BUCKETS.map(b=>({...b,rows:[]}));
+  byLead.forEach(x=>{
+    if(x.d2won===null)return;
+    const b=dayBuckets.find(b=>b.fn(x.d2won));
+    if(b)b.rows.push(x);
+  });
+  const daysBody=document.getElementById('ag-days-body');
+  if(daysBody)daysBody.innerHTML=dayBuckets.filter(b=>b.rows.length).map(b=>{
+    const kw=b.rows.reduce((s,x)=>s+(x.size||0),0);
+    const hoto=b.rows.filter(x=>x.hoto).length;
+    return `<tr onclick="openAgPopupDays('${b.label}')" style="cursor:pointer;">
+      <td class="fr-cell-clk">${b.label}</td>
+      <td>${b.rows.length}</td>
+      <td>${Math.round(kw).toLocaleString('en-IN')}</td>
+      <td>${hoto?`<span style="color:#1f9d6b;font-weight:600;">${hoto} ✓</span>`:'—'}</td>
+    </tr>`;
+  }).join('');
+
+  // Chart: count by day bucket
+  if(_agChart){_agChart.destroy();_agChart=null;}
+  const chartLabels=dayBuckets.map(b=>b.label);
+  const chartData=dayBuckets.map(b=>b.rows.length);
+  const agCtx=document.getElementById('ag-chart');
+  if(agCtx&&chartData.some(v=>v>0)){
+    _agChart=new Chart(agCtx,{type:'bar',data:{labels:chartLabels,datasets:[{data:chartData,backgroundColor:'#1f9d6b',borderRadius:6,maxBarThickness:50}]},options:{plugins:{legend:{display:false},datalabels:{color:'#fff',font:{weight:700,size:11},formatter:v=>v>0?v:''}},scales:{y:{beginAtZero:true,grid:{color:'#eef2f9'}},x:{grid:{display:false}}},maintainAspectRatio:false}});
+  }
+  window._agByDay=Object.fromEntries(dayBuckets.map(b=>[b.label,b.rows]));
+}
+
+function openAgPopup(type,key,ids){
+  // Generic opener — find matching leads by ID
+  const all=getSaleWonLeads();
+  const idSet=new Set(ids.join?ids:JSON.parse(ids));
+  const rows=all.filter(x=>idSet.has(x.id));
+  showAgPopup(type+' · '+key,rows.length+' projects',rows);
+}
+function openAgPopupDays(label){
+  const rows=(window._agByDay||{})[label]||[];
+  showAgPopup('Days to win: '+label,rows.length+' projects',rows);
+}
+function showAgPopup(title,sub,rows){
+  document.getElementById('ag-popup-title').textContent=title;
+  document.getElementById('ag-popup-sub').textContent=sub;
+  const fmtD=iso=>iso?new Date(iso+' 00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'—';
+  const sorted=rows.slice().sort((a,b)=>(b.wonDate||'').localeCompare(a.wonDate||''));
+  document.getElementById('ag-popup-body').innerHTML=sorted.map(x=>`
+    <div style="border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin-bottom:10px;border-left:4px solid #1f9d6b;background:#f0fdf4;">
+      <div style="font-size:14px;font-weight:700;">${x.r.proj||'—'}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:7px;font-size:12px;">
+        <span>👤 <b>${x.bdm||'—'}</b></span>
+        <span>🏙 <b>${x.city||'—'}</b></span>
+        <span>⚡ <b>${x.size?Math.round(x.size)+' KW':'—'}</b></span>
+        <span>📋 <b>${x.meetings} meetings</b></span>
+        <span>📅 Won: <b style="color:#1f9d6b;">${fmtD(x.wonDate)}</b></span>
+        ${x.d2won!==null?`<span>⏱ <b style="color:#1554b8;">${x.d2won}d to win</b></span>`:''}
+        ${x.hoto?`<span>🤝 HOTO: <b style="color:#9a6a06;">${fmtD(x.hoto)}</b></span>`:''}
+      </div>
+    </div>`).join('');
+  document.getElementById('ag-popup').style.display='flex';
+}
+function closeAgPopup(){document.getElementById('ag-popup').style.display='none';}
+
+// Hook aging into renderSaleWon — called after data is computed
+const _origRenderSaleWon=renderSaleWon;
+// We inject aging call inside renderSaleWon by patching clearSWFilters to also call it
+// Actually we'll call renderAgingReport at the end of buildAll / renderSaleWon via a monkey-patch
+(function(){
+  const orig=renderSaleWon;
+  window.renderSaleWon=function(){orig.apply(this,arguments);const all=getSaleWonLeads();const fCity=(document.getElementById('sw-f-city')||{}).value||'';const fBDM=(document.getElementById('sw-f-bdm')||{}).value||'';const fPay=(document.getElementById('sw-f-payment')||{}).value||'';const fMonth=(document.getElementById('sw-f-month')||{}).value||'';const data=all.filter(x=>{if(fCity&&x.city!==fCity)return false;if(fBDM&&x.bdm!==fBDM)return false;if(fPay&&x.payment!==fPay)return false;return true;});renderAgingReport(data);};
+})();
+
+// ═══════════════════════════════════════════════════════════════
+//  FUNNEL REPORT
+// ═══════════════════════════════════════════════════════════════
+let _frMode='bdm';
+function setFRMode(mode,btn){
+  _frMode=mode;
+  document.querySelectorAll('.fr-mode-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  const titles={bdm:'BDM-wise Funnel',city:'City-wise Funnel',month:'Monthly Funnel'};
+  const el=document.getElementById('fr-table-title');if(el)el.textContent=titles[mode]||'';
+  renderFunnelRpt();
+}
+
+function renderFunnelRpt(){
+  const rows=applyFilters();
+  // Populate month filter
+  const monthSet=new Set();
+  rows.forEach(r=>{if(r.msM)monthSet.add(r.msM);});
+  const mKeys=[...monthSet].sort().reverse();
+  const mSel=document.getElementById('fr-f-month');
+  if(mSel){
+    const cur=mSel.value;mSel.innerHTML='';
+    mKeys.forEach(k=>{const[y,mo]=k.split('-');const o=document.createElement('option');o.value=k;o.textContent=MON_NAMES[+mo-1]+' '+y;mSel.appendChild(o);if(k===cur)o.selected=true;});
+    if(!mKeys.includes(mSel.value)&&mKeys.length)mSel.value=mKeys[0];
+  }
+  const selMonth=(mSel&&mSel.value)||mKeys[0]||'';
+
+  // Leads whose first-scheduled-month is selMonth (cohort), OR scheduled in selMonth
+  const curM=selMonth;
+
+  // Per-row: determine if meeting is in selMonth, or was completed/won in selMonth
+  // Group by dimension key
+  const dimFn=_frMode==='bdm'?(r=>r.bdm||'(No BDM)'):_frMode==='city'?(r=>r.city||'(No City)'):(r=>r.msM||'');
+  const agg={};
+  rows.forEach(r=>{
+    const k=dimFn(r);
+    if(!agg[k])agg[k]={scheduled:[],completed:[],won:[],hoto:[],scheduledCur:[],completedCur:[],wonCur:[],hotoCur:[]};
+    const G=agg[k];
+    // This month scheduled
+    if(r.msM===curM)G.scheduledCur.push(r);
+    // All time scheduled (for context)
+    G.scheduled.push(r);
+    // Completed in this month
+    if(r.cmpM===curM)G.completedCur.push(r);
+    if(r.me)G.completed.push(r);
+    // Won in this month
+    if(r.wonM===curM)G.wonCur.push(r);
+    if(r.wonM)G.won.push(r);
+    // HOTO in this month
+    if(r.hotoM===curM)G.hotoCur.push(r);
+    if(r.hotoM)G.hoto.push(r);
+  });
+
+  // Summary KPIs
+  const allCurSched=[...new Set(rows.filter(r=>r.msM===curM))];
+  const allCurComp=[...new Set(rows.filter(r=>r.cmpM===curM))];
+  const allCurWon=[...new Set(rows.filter(r=>r.wonM===curM))];
+  const allCurHoto=[...new Set(rows.filter(r=>r.hotoM===curM))];
+  const kpiHtml=(v,l,c)=>`<div style="text-align:center;"><div style="font-size:26px;font-weight:800;color:${c};">${v}</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#d5c2ff;">${l}</div></div>`;
+  const fr=document.getElementById('fr-summary-kpis');
+  if(fr)fr.innerHTML=
+    kpiHtml(allCurSched.length,'Scheduled','#fff')+
+    kpiHtml(allCurComp.length,'Completed','#c4b5fd')+
+    kpiHtml(allCurWon.length,'Sale Won','#86efac')+
+    kpiHtml(allCurHoto.length,'HOTO','#fde68a')+
+    kpiHtml(allCurSched.length?Math.round(allCurWon.length/allCurSched.length*100)+'%':'—','Conv. Rate','#93c5fd');
+
+  // Table
+  const thead=document.getElementById('fr-thead');
+  const tbody=document.getElementById('fr-tbody');
+  const dimLabel={bdm:'BDM',city:'City',month:'Month'}[_frMode];
+  if(thead)thead.innerHTML=`<tr>
+    <th style="text-align:left;position:sticky;left:0;z-index:3;background:var(--b900);">${dimLabel}</th>
+    <th>Scheduled<br><span style="font-size:9px;opacity:.7;">This Month</span></th>
+    <th>Completed<br><span style="font-size:9px;opacity:.7;">This Month</span></th>
+    <th>Old Completed<br><span style="font-size:9px;opacity:.7;">Done this month</span></th>
+    <th>Total Completed</th>
+    <th>Sale Won<br><span style="font-size:9px;opacity:.7;">This Month</span></th>
+    <th>Sale Won<br><span style="font-size:9px;opacity:.7;">Old (any)</span></th>
+    <th>HOTO<br><span style="font-size:9px;opacity:.7;">This Month</span></th>
+    <th>Conv. Rate<br><span style="font-size:9px;opacity:.7;">Won/Sched</span></th>
+  </tr>`;
+
+  const pct=(n,d)=>{const p=d?Math.round(n/d*100):0;const cls=p>=20?'hi':p>=8?'mid':'lo';return `<span class="fr-pct ${cls}">${p}%</span>`;};
+  const entries=Object.entries(agg).sort((a,b)=>b[1].scheduledCur.length-a[1].scheduledCur.length);
+
+  // Totals
+  let tSc=0,tCoCur=0,tCoOld=0,tCoTot=0,tWoCur=0,tWoOld=0,tHo=0;
+
+  const clickCell=(label,recs,sub)=>`<span class="fr-cell-clk" onclick="openFRPopup('${label.replace(/'/g,"\\'")}','${sub.replace(/'/g,"\\'")}',${JSON.stringify(recs.map(r=>r.lead))})">`;
+
+  if(tbody)tbody.innerHTML=entries.map(([k,G])=>{
+    const sc=G.scheduledCur.length;
+    const coCur=G.completedCur.filter(r=>r.msM===curM).length;          // Completed this month & scheduled this month
+    const coOld=G.completedCur.filter(r=>r.msM!==curM).length;          // Completed this month but scheduled before
+    const coTot=coCur+coOld;
+    const woCur=G.wonCur.filter(r=>r.msM===curM).length;
+    const woOld=G.wonCur.filter(r=>r.msM!==curM).length;
+    const ho=G.hotoCur.length;
+    tSc+=sc;tCoCur+=coCur;tCoOld+=coOld;tCoTot+=coTot;tWoCur+=woCur;tWoOld+=woOld;tHo+=ho;
+    const cell=(n,recs,sub)=>n?`${clickCell(k,recs,sub)}<b style="color:var(--b700);">${n}</b></span>`:n;
+    return `<tr>
+      <td style="font-weight:700;position:sticky;left:0;background:#fff;z-index:2;">${k}</td>
+      <td>${cell(sc,G.scheduledCur,'Scheduled this month')}</td>
+      <td>${cell(coCur,G.completedCur.filter(r=>r.msM===curM),'Completed this month (current)')}</td>
+      <td>${cell(coOld,G.completedCur.filter(r=>r.msM!==curM),'Old meetings completed this month')}</td>
+      <td><b>${coTot}</b></td>
+      <td>${cell(woCur,G.wonCur.filter(r=>r.msM===curM),'Sale won this month (new)')}</td>
+      <td>${cell(woOld,G.wonCur.filter(r=>r.msM!==curM),'Old leads won this month')}</td>
+      <td>${cell(ho,G.hotoCur,'HOTO this month')}</td>
+      <td>${pct(woCur+woOld,sc)}</td>
+    </tr>`;
+  }).join('')+`<tr style="background:var(--b50);font-weight:700;border-top:2px solid var(--b300);">
+    <td style="position:sticky;left:0;background:var(--b50);z-index:2;font-weight:800;">TOTAL</td>
+    <td>${tSc}</td><td>${tCoCur}</td><td>${tCoOld}</td><td>${tCoTot}</td>
+    <td>${tWoCur}</td><td>${tWoOld}</td><td>${tHo}</td><td>${pct(tWoCur+tWoOld,tSc)}</td>
+  </tr>`;
+}
+
+function openFRPopup(dim,sub,leadIds){
+  const idSet=new Set(leadIds);
+  const rows=applyFilters().filter(r=>idSet.has(r.lead));
+  const projMap={};rows.forEach(r=>{if(!projMap[r.lead])projMap[r.lead]=r;});
+  const projs=Object.values(projMap);
+  document.getElementById('fr-popup-title').textContent=dim+' · '+sub;
+  document.getElementById('fr-popup-sub').textContent=projs.length+' projects / '+rows.length+' meetings';
+  const fmtD=iso=>iso?new Date(iso+' 00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'—';
+  document.getElementById('fr-popup-body').innerHTML=projs.map(r=>`
+    <div style="border:1px solid var(--line);border-radius:11px;padding:11px 14px;margin-bottom:9px;border-left:4px solid var(--b500);background:#eff6ff;">
+      <div style="font-size:13px;font-weight:700;">${r.proj||'—'}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;font-size:11.5px;">
+        <span>👤 ${r.bdm||'—'}</span><span>🏙 ${r.city||'—'}</span>
+        <span>📅 Sched: ${fmtD(r.ms)}</span>
+        <span>✅ Comp: ${r.me?fmtD(r.me):'—'}</span>
+        <span style="font-weight:700;color:#1f9d6b;">${(r.fstat||'').replace('Meeting ','')}</span>
+      </div>
+    </div>`).join('');
+  document.getElementById('fr-popup').style.display='flex';
+}
+function closeFRPopup(){document.getElementById('fr-popup').style.display='none';}
+function clearFRFilters(){const m=document.getElementById('fr-f-month');if(m)m.selectedIndex=0;renderFunnelRpt();}
 
 // Dashboard initialises only after a successful login
 let STARTED=false;
