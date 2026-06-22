@@ -890,15 +890,17 @@ function dval(k,v){return FMETA[k].month?monDisp(v):(FMETA[k].clean?(''+v).repla
 
 let LEADMAP={},LEADIDS=[],OPTS={},BASE=[];
 function inScope(r){
-  if(!VIEWER.role||VIEWER.role==='admin')return true;
+  if(!VIEWER.role||VIEWER.role==='admin') return true;
   if(VIEWER.role==='ados'){
-    // ADOS sees all BDMs whose Col H in User_Setting = ADOS's email
-    // Match by BDM name (derived from email) — ADOS_MAP has nme-derived names
-    const myBDMs=ADOS_MAP[VIEWER.email]||[];
-    return myBDMs.includes(r.bdm||'');
+    // ADOS: sees BDMs whose col H (ADOS Mapping) = their email
+    return (ADOS_MAP[VIEWER.email]||[]).includes(r.bdm||'');
   }
-  if(VIEWER.role==='mgr')return (r.mgr||'')===VIEWER.name;
-  return (r.bdm||'')===VIEWER.name; // bdm
+  if(VIEWER.role==='mgr'){
+    // Manager: sees rows where record.mgr (derived from Manager_ID email) = nmeEmail(their login email)
+    return (r.mgr||'')===VIEWER.name;
+  }
+  // BDM: own rows only (record.bdm = their derived name)
+  return (r.bdm||'')===VIEWER.name;
 }
 function buildIndex(){
   BASE=ROWS.filter(inScope);
@@ -1649,19 +1651,23 @@ function nmeEmail(email){
   return e.split('.').filter(Boolean).map(p=>p[0].toUpperCase()+p.slice(1)).join('.');
 }
 
-// Build USERS + ADOS_MAP from raw rows fetched from sheet
+// Build USERS + ADOS_MAP from raw rows fetched live from User_Setting sheet
+// 4-tier access logic (evaluated in order):
+//   1. Col H = "Cental acces"          → admin  (full access)
+//   2. Login email found in Col H       → ados   (sees BDMs whose col H = their email)
+//   3. Login email = Manager_ID email   → mgr    (sees rows where record.mgr = nmeEmail(their email))
+//   4. Otherwise                        → bdm    (own rows only)
 function buildUserIndex(rows){
-  // rows: [{name, email, pw, type, mgr, am}, ...]
   USERS={};ADOS_MAP={};ADOS_EMAIL_MAP={};MGRNAME={};
 
-  // Pass 1: find all emails that appear as ADOS Mapping (col H) for other rows
+  // Pass 1: collect all emails that appear as ADOS Mapping values (col H)
   const adosEmailsInColH=new Set();
   rows.forEach(r=>{
     const am=(r.am||'').trim().toLowerCase();
     if(am&&am!=='cental acces'&&am.includes('@'))adosEmailsInColH.add(am);
   });
 
-  // Pass 2: build ados → bdm mapping (who appears in col H = their email)
+  // Pass 2: ados_email → [bdm_emails whose col H = ados_email]
   const adosToBdmEmails={};
   rows.forEach(r=>{
     const em=(r.email||'').trim().toLowerCase();
@@ -1671,29 +1677,42 @@ function buildUserIndex(rows){
     }
   });
 
-  // Pass 3: assign roles + build USERS map
+  // Pass 3: collect all manager emails from col F (Manager Email)
+  // A manager is someone whose email appears as col F for other users
+  const mgrEmails=new Set();
+  rows.forEach(r=>{
+    const mgr=(r.mgr||'').trim().toLowerCase();
+    const em=(r.email||'').trim().toLowerCase();
+    if(mgr&&mgr!=='cental acces'&&mgr.includes('@')&&mgr!==em){
+      mgrEmails.add(mgr);
+    }
+  });
+
+  // Pass 4: assign roles + build USERS
   rows.forEach(r=>{
     const em=(r.email||'').trim().toLowerCase();
     if(!em||!r.pw)return;
     const am=(r.am||'').trim().toLowerCase();
     const n=r.name||nmeEmail(em);
-
     let t;
-    if(am==='cental acces') t='admin';
+    if(am==='cental acces')      t='admin';
     else if(adosEmailsInColH.has(em)) t='ados';
-    else t='bdm';
-
+    else if(mgrEmails.has(em))   t='mgr';
+    else                         t='bdm';
     USERS[em]={n,p:r.pw,t,m:(r.mgr||'').toLowerCase(),am};
   });
 
-  // Force safeek as admin
+  // Always force safeek as admin
   if(USERS['safeek.m@solarsquare.in'])USERS['safeek.m@solarsquare.in'].t='admin';
 
-  // Pass 4: build ADOS_MAP (name-based for inScope matching)
+  // Pass 5: build ADOS_MAP (name-based) for ADOS inScope matching
   Object.keys(adosToBdmEmails).forEach(ados=>{
     ADOS_EMAIL_MAP[ados]=adosToBdmEmails[ados];
-    ADOS_MAP[ados]=adosToBdmEmails[ados].map(bdmEmail=>nmeEmail(bdmEmail));
+    ADOS_MAP[ados]=adosToBdmEmails[ados].map(e=>nmeEmail(e));
   });
+
+  // Build MGRNAME: manager_email → derived name (matches record.mgr field)
+  mgrEmails.forEach(em=>{ MGRNAME[em]=nmeEmail(em); });
 }
 
 function authenticate(email,pass){
@@ -1707,12 +1726,12 @@ function authenticate(email,pass){
 }
 
 function roleLabel(){
-  if(VIEWER.role==='admin')return 'Admin · full access';
+  if(VIEWER.role==='admin') return 'Admin · full access';
   if(VIEWER.role==='ados'){
     const cnt=(ADOS_MAP[VIEWER.email]||[]).length;
     return `ADOS · ${cnt} BDM${cnt!==1?'s':''}`;
   }
-  if(VIEWER.role==='mgr')return 'Manager · team view';
+  if(VIEWER.role==='mgr') return `Manager · ${VIEWER.name}'s team`;
   return 'BDM · own leads';
 }
 
