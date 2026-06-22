@@ -1716,9 +1716,13 @@ function logout(){
 function setLoginMsg(msg,isErr){
   const el=document.getElementById('lerr');
   el.textContent=msg;
-  el.classList.toggle('show',!!msg);
-  if(!isErr)el.style.cssText='display:block;background:#e7f6ee;color:#1f9d6b;border-radius:10px;padding:9px 12px;font-size:12.5px;font-weight:600;margin-bottom:14px;';
-  else el.style.cssText='';  // reset to default red
+  el.style.display=msg?'block':'none';
+  if(isErr){
+    el.style.cssText='display:block;background:#fdecea;color:#c0392b;border-radius:10px;padding:9px 12px;font-size:12.5px;font-weight:600;margin-bottom:14px;white-space:pre-line;line-height:1.5;';
+  }else{
+    el.style.cssText='display:block;background:#e7f6ee;color:#1f9d6b;border-radius:10px;padding:9px 12px;font-size:12.5px;font-weight:600;margin-bottom:14px;';
+  }
+  if(!msg)el.style.display='none';
 }
 
 async function doLogin(){
@@ -1728,43 +1732,65 @@ async function doLogin(){
 
   const btn=document.getElementById('lbtn');
   btn.textContent='🔄 Signing in…';btn.disabled=true;
+  setLoginMsg('',false);
 
-  // Step 1: Fetch live User_Setting from Apps Script
   const APPS_URL=APPS_SCRIPT_URL;
-  let usersFetched=false;
 
-  if(APPS_URL){
-    try{
-      setLoginMsg('Connecting to server…',false);
-      const res=await fetch(APPS_URL+'?sheet=users',{redirect:'follow'});
-      if(res.ok){
-        const text=await res.text();
-        const first=text.trimStart().slice(0,1);
-        if(first==='['){
-          const rows=JSON.parse(text);
-          buildUserIndex(rows);
-          usersFetched=true;
-        }
-      }
-    }catch(e){console.warn('Live user fetch failed:',e.message);}
-  }
-
-  // Step 2: If live fetch failed, show error (don't fall back silently)
-  if(!usersFetched){
+  // Must have Apps Script URL configured
+  if(!APPS_URL){
     btn.textContent='Sign in';btn.disabled=false;
-    setLoginMsg('⚠ Could not reach the server. Check your connection and try again.',true);
+    setLoginMsg('⚠ Apps Script URL not configured. Contact your admin.',true);
     return;
   }
 
-  // Step 3: Authenticate against live data
-  setLoginMsg('',false);
+  // Fetch live User_Setting with a 15s timeout + automatic retry once
+  let usersFetched=false;
+  let lastErr='';
+
+  for(let attempt=1;attempt<=2;attempt++){
+    try{
+      setLoginMsg(attempt===1?'🔄 Loading user settings…':'🔄 Retrying…',false);
+      const ctrl=new AbortController();
+      const timer=setTimeout(()=>ctrl.abort(),15000);
+      const res=await fetch(APPS_URL+'?sheet=users',{redirect:'follow',signal:ctrl.signal});
+      clearTimeout(timer);
+      if(!res.ok){lastErr='Server returned HTTP '+res.status;continue;}
+      const text=await res.text();
+      const first=text.trimStart().slice(0,1);
+      if(first==='['){
+        const rows=JSON.parse(text);
+        if(rows.length>0){buildUserIndex(rows);usersFetched=true;break;}
+        else lastErr='Empty user list from server.';
+      } else if(first==='{'){
+        // Error JSON from Apps Script
+        const obj=JSON.parse(text);
+        lastErr='Server error: '+(obj.error||text.slice(0,80));
+      } else {
+        lastErr='Unexpected response (got HTML — check Apps Script is v3 and deployed correctly)';
+      }
+    }catch(e){
+      lastErr=e.name==='AbortError'?'Request timed out (>15s)':e.message;
+    }
+  }
+
+  btn.textContent='Sign in';btn.disabled=false;
+
+  if(!usersFetched){
+    setLoginMsg(
+      `⚠ Could not load user settings. ${lastErr}.\n\n`+
+      `Make sure the Apps Script (Code.gs) is updated to v3 and redeployed — `+
+      `see BDM_Dashboard_Data_API_v3.js in your Drive.`,
+      true
+    );
+    return;
+  }
+
+  // Authenticate against live data
   if(authenticate(em,pw)){
-    document.getElementById('lerr').classList.remove('show');
+    setLoginMsg('',false);
     document.getElementById('login').classList.add('hidden');
-    btn.textContent='Sign in';btn.disabled=false;
     startDashboard();
   }else{
-    btn.textContent='Sign in';btn.disabled=false;
     setLoginMsg('Invalid email or password. Please try again.',true);
     document.getElementById('lpass').select();
   }
