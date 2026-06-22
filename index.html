@@ -2384,18 +2384,34 @@ function renderCalendar(){
     const dayRows=byDate[iso]||[];
     const isToday=iso===todayISO;
     const hasMeet=dayRows.length>0;
-    const maxShow=4;
-    // Day number — circle for today
-    const dayNum=isToday?`<div class="cal-daynum">${d}</div>`:`<div class="cal-daynum">${d}</div>`;
+    const maxShow=3;
+
+    // Count completed vs pending for this day
+    const cmpCount=dayRows.filter(r=>r.me).length;
+    const pendCount=dayRows.length-cmpCount;
+
+    // Meeting counter mini-bar shown in cell header when there are meetings
+    const counterBar=hasMeet?`<div style="display:flex;align-items:center;gap:4px;margin-bottom:3px;">
+      ${dayRows.length?`<span style="font-size:9px;font-weight:700;background:#1a3a7c;color:#fff;padding:1px 5px;border-radius:3px;" title="Total meetings">${dayRows.length}</span>`:''}
+      ${cmpCount?`<span style="font-size:9px;font-weight:700;background:#d1fae5;color:#065f46;padding:1px 5px;border-radius:3px;" title="${cmpCount} completed">✓${cmpCount}</span>`:''}
+      ${pendCount?`<span style="font-size:9px;font-weight:700;background:#fee2e2;color:#991b1b;padding:1px 5px;border-radius:3px;" title="${pendCount} pending">⏳${pendCount}</span>`:''}
+    </div>`:'';
+
     let badges=dayRows.slice(0,maxShow).map(r=>{
       const cls=calMeetClass(r);
-      const lbl=r.proj?r.proj.slice(0,20):r.ftype==='Follow-up Meeting'?'Follow-up':'Fresh';
-      return `<span class="cal-badge ${cls}">${lbl}</span>`;
+      const lbl=r.proj?r.proj.slice(0,22):r.ftype==='Follow-up Meeting'?'Follow-up':'Fresh';
+      // Strikethrough if completed
+      const style=r.me?'text-decoration:line-through;opacity:.75;':'';
+      return `<span class="cal-badge ${cls}" style="${style}">${lbl}</span>`;
     }).join('');
     if(dayRows.length>maxShow)badges+=`<div class="cal-more">+${dayRows.length-maxShow} more</div>`;
+
     const clickFn=hasMeet?`onclick="openCalPopup('${iso}')" `:'';
     const cls=['cal-cell',isToday?'today':'',hasMeet?'has-meetings clickable':''].filter(Boolean).join(' ');
-    html+=`<div class="${cls}" ${clickFn}>${dayNum}${badges}</div>`;
+    html+=`<div class="${cls}" ${clickFn}>
+      <div class="cal-daynum">${d}</div>
+      ${counterBar}${badges}
+    </div>`;
   }
   // Fill trailing cells
   const totalCells=startDow+daysInMonth;const rem=7-totalCells%7;
@@ -2403,14 +2419,15 @@ function renderCalendar(){
   html+='</div></div>'; // close .cal-grid + .cal-outer
   document.getElementById('cal-grid-wrap').innerHTML=html;
 
-  // Stats row — refined card style
+  // Stats row — added Pending card
   const total=calRows.length;
   const fresh=calRows.filter(r=>r.ftype==='Fresh Meeting').length;
   const fu=calRows.filter(r=>r.ftype==='Follow-up Meeting').length;
-  const completed=calRows.filter(r=>(r.me||'').slice(0,7)===monthVal).length;
+  const completed=calRows.filter(r=>r.me&&(r.me||'').slice(0,7)===monthVal).length;
+  const pending=total-completed;
   const won=calRows.filter(r=>(r.fstat||'').includes('Sale Done')).length;
-  const kpi=(v,l,c,icon)=>`<div style="background:#fff;border:1.5px solid #c7d7f5;border-top:4px solid ${c};border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;">
-    <div style="font-size:26px;line-height:1;">${icon}</div>
+  const kpi=(v,l,c,icon)=>`<div style="background:#fff;border:1.5px solid #c7d7f5;border-top:4px solid ${c};border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;cursor:default;">
+    <div style="font-size:24px;line-height:1;">${icon}</div>
     <div><div style="font-size:26px;font-weight:800;color:${c};line-height:1;">${v}</div>
     <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#64748b;margin-top:3px;">${l}</div></div></div>`;
   document.getElementById('cal-stats-row').innerHTML=
@@ -2418,6 +2435,7 @@ function renderCalendar(){
     kpi(fresh,'Fresh Meetings','#2f7bf4','🆕')+
     kpi(fu,'Follow-ups','#9b6dff','🔄')+
     kpi(completed,'Completed','#1f9d6b','✅')+
+    kpi(pending,'Pending','#d6493b','⏳')+
     kpi(won,'Sale Won','#1f9d6b','🏆');
 
   // Store for popup
@@ -2429,33 +2447,77 @@ function openCalPopup(iso){
   if(!rows.length)return;
   const[y,m,d]=iso.split('-').map(Number);
   const dateLabel=new Date(Date.UTC(y,m-1,d)).toLocaleDateString('en-IN',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  const cmpC=rows.filter(r=>r.me).length;
+  const pendC=rows.length-cmpC;
   document.getElementById('cal-popup-date').textContent=dateLabel;
-  document.getElementById('cal-popup-sub').textContent=rows.length+' meeting'+(rows.length>1?'s':'')+' scheduled';
-  const fmtD=iso=>iso?new Date(iso+' 00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'—';
-  document.getElementById('cal-popup-body').innerHTML=rows.map(r=>{
+  document.getElementById('cal-popup-sub').textContent=
+    `${rows.length} meeting${rows.length>1?'s':''} · ✅ ${cmpC} completed · ⏳ ${pendC} pending`;
+
+  const fmtD=s=>s?new Date(s+' 00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'—';
+  const daysBetween=(a,b)=>{if(!a||!b)return null;return Math.round((new Date(b+' 00:00')-new Date(a+' 00:00'))/86400000);};
+
+  // Sort: completed first, then pending; within each by scheduled date
+  const sorted=[...rows].sort((a,b)=>{
+    const aComp=a.me?0:1,bComp=b.me?0:1;
+    if(aComp!==bComp)return aComp-bComp;
+    return (a.ms||'').localeCompare(b.ms||'');
+  });
+
+  document.getElementById('cal-popup-body').innerHTML=sorted.map((r,idx)=>{
     const cls=calCardClass(r);
     const stat=(r.fstat||'').replace('Meeting ','');
-    const statCol=stat.includes('Sale Done')?'#1f9d6b':stat.includes('Not interested')?'#d6493b':stat.includes('completed')?'var(--b600)':'var(--muted)';
-    return `<div class="cal-proj-card ${cls}">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;">
-        <div style="font-size:14px;font-weight:700;color:var(--ink);">${r.proj||'—'}</div>
-        <span style="font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:999px;background:${statCol}22;color:${statCol};white-space:nowrap;">${stat||'—'}</span>
+    const isWon=stat.includes('Sale Done');
+    const isLost=stat.includes('Not interested');
+    const isComp=!!r.me;
+    const statBg=isWon?'#d1fae5':isLost?'#fee2e2':isComp?'#dbeafe':'#fef3c7';
+    const statCol=isWon?'#065f46':isLost?'#991b1b':isComp?'#1554b8':'#92400e';
+    const d2w=daysBetween(r.ms,r.me);
+    const d2h=daysBetween(r.me||r.ms,r.hoto);
+
+    return `<div class="cal-proj-card ${cls}" style="margin-bottom:12px;">
+      <!-- Header: project name + status pill -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+        <div>
+          <div style="font-size:15px;font-weight:800;color:#1a2440;line-height:1.2;">${r.proj||'—'}</div>
+          <div style="font-size:10.5px;color:#64748b;margin-top:2px;">${r.lead||''}</div>
+        </div>
+        <span style="font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:999px;background:${statBg};color:${statCol};white-space:nowrap;border:1px solid ${statCol}33;">
+          ${isComp?'✅':'⏳'} ${stat||'—'}
+        </span>
       </div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;font-size:12px;">
-        <span style="color:var(--muted);">👤 <b style="color:var(--ink);">${r.bdm||'—'}</b></span>
-        <span style="color:var(--muted);">🏙 <b style="color:var(--ink);">${r.city||'—'}</b></span>
-        <span style="color:var(--muted);">⚡ <b style="color:var(--ink);">${r.size?r.size+' KW':'—'}</b></span>
-        <span style="color:var(--muted);">📋 <b style="color:var(--ink);">${r.ftype||'—'}</b></span>
+
+      <!-- Key details grid -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px 14px;margin-bottom:8px;">
+        <div style="font-size:12px;">👤 BDM<br><b style="color:#1a2440;font-size:13px;">${r.bdm||'—'}</b></div>
+        <div style="font-size:12px;">🏙 City<br><b style="color:#1a2440;font-size:13px;">${r.city||'—'}</b></div>
+        <div style="font-size:12px;">⚡ Capacity<br><b style="color:#1a2440;font-size:13px;">${r.size?Math.round(r.size)+' KW':'—'}</b></div>
+        <div style="font-size:12px;">📋 Meeting Type<br><b style="color:${r.ftype==='Follow-up Meeting'?'#6d28d9':'#1554b8'};font-size:12px;">${r.ftype||'—'}</b></div>
       </div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;font-size:12px;">
-        <span style="color:var(--muted);">📅 Scheduled: <b style="color:var(--ink);">${fmtD(r.ms)}</b></span>
-        <span style="color:var(--muted);">✅ Completed: <b style="color:var(--ink);">${r.me?fmtD(r.me):'Pending'}</b></span>
-        ${r.hoto?`<span style="color:var(--muted);">🤝 HOTO: <b style="color:#1f9d6b;">${fmtD(r.hoto)}</b></span>`:''}
+
+      <!-- Dates row -->
+      <div style="display:flex;flex-wrap:wrap;gap:6px 16px;padding:8px 10px;background:rgba(0,0,0,.03);border-radius:8px;font-size:11.5px;margin-bottom:6px;">
+        <span>📅 Scheduled: <b style="color:#1554b8;">${fmtD(r.ms)}</b></span>
+        <span>✅ Completed: <b style="color:${isComp?'#1f9d6b':'#d6493b'};">${r.me?fmtD(r.me):'Pending'}</b></span>
+        ${d2w!==null?`<span>⏱ Duration: <b style="color:#9b6dff;">${d2w}d</b></span>`:''}
+        ${r.nfu?`<span>🔔 Next F/U: <b style="color:#e0951f;">${fmtD(r.nfu)}</b></span>`:''}
+        ${r.hoto?`<span>🤝 HOTO: <b style="color:#1f9d6b;">${fmtD(r.hoto)}</b></span>`:''}
+        ${d2h!==null?`<span>📦 HOTO lag: <b>${d2h}d</b></span>`:''}
       </div>
-      ${r.cat||r.label?`<div style="display:flex;gap:8px;margin-top:6px;font-size:11px;color:var(--muted);">${r.cat?`<span>📂 ${r.cat}</span>`:''}${r.label?`<span>🏷 ${r.label}</span>`:''}</div>`:''}
-      ${r.callLatest?`<div style="margin-top:7px;font-size:11.5px;color:var(--ink);background:rgba(0,0,0,.04);border-radius:7px;padding:6px 9px;">💬 ${r.callLatest}</div>`:''}
+
+      <!-- Category + Label + Manager -->
+      ${(r.cat||r.label||r.mgr)?`<div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11.5px;color:#64748b;margin-bottom:6px;">
+        ${r.cat?`<span>📂 Category: <b style="color:#1a2440;">${r.cat}</b></span>`:''}
+        ${r.label?`<span>🏷 Label: <b style="color:#1a2440;">${r.label}</b></span>`:''}
+        ${r.mgr?`<span>👥 Manager: <b style="color:#1a2440;">${r.mgr}</b></span>`:''}
+      </div>`:''}
+
+      <!-- Latest call note -->
+      ${r.callLatest?`<div style="font-size:11.5px;color:#1a2440;background:rgba(21,84,184,.06);border-left:3px solid #2f7bf4;border-radius:0 7px 7px 0;padding:7px 10px;">
+        💬 <b>Latest note:</b> ${r.callLatest}
+      </div>`:''}
     </div>`;
   }).join('');
+
   document.getElementById('cal-popup').style.display='flex';
 }
 function closeCalPopup(){document.getElementById('cal-popup').style.display='none';}
