@@ -870,7 +870,8 @@ let LEADMAP={},LEADIDS=[],OPTS={},BASE=[];
 function inScope(r){
   if(!VIEWER.role||VIEWER.role==='admin')return true;
   if(VIEWER.role==='ados'){
-    // ADOS sees all BDMs listed under their email in ADOS_MAP
+    // ADOS sees all BDMs whose Col H in User_Setting = ADOS's email
+    // Match by BDM name (derived from email) — ADOS_MAP has nme-derived names
     const myBDMs=ADOS_MAP[VIEWER.email]||[];
     return myBDMs.includes(r.bdm||'');
   }
@@ -1605,16 +1606,73 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
   if(tab==='funnelrpt')renderFunnelRpt();
 });
 
-// ===== ACCESS CONTROL — credential login (User_Setting sheet, incl. ADOS) =====
-const USERS={"safeek.m@solarsquare.in":{"n":"Safeek.M","p":"SSE@123","t":"admin","m":"cental acces","am":"cental acces"},"nishit.g@solarsquare.in":{"n":"Nishit.G","p":"SSE@123","t":"admin","m":"cental acces","am":"cental acces"},"anshuman.s@solarsquare.in":{"n":"Anshuman.S","p":"SSE@123","t":"admin","m":"cental acces","am":"cental acces"},"divyanshu.m@solarsquare.in":{"n":"Divyanshu.M","p":"SSE@123","t":"admin","m":"cental acces","am":"cental acces"},"nilesh.g@homes.solarsquare.in":{"n":"Nilesh.G","p":"SSE@123","t":"admin","m":"cental acces","am":"kshitij.s@solarsquare.in"},"ayush.l@solarsquare.in":{"n":"Ayush.L","p":"SSE@1234","t":"admin","m":"cental acces","am":""},"kshitij.s@solarsquare.in":{"n":"Kshitij.S","p":"SSE@123","t":"admin","m":"cental acces","am":""},"sadik.a@solarsquare.in":{"n":"Sadik.A","p":"SSE@123","t":"ados","m":"sadik.a@solarsquare.in","am":""},"akshay.s@solarsquare.in":{"n":"Akshay.S","p":"SSE@123","t":"bdm","m":"swapnil.i@solarsquare.in","am":""},"sourabh.khade@solarsquare.in":{"n":"Sourabh.Khade","p":"SSE@123","t":"ados","m":"sourabh.khade@solarsquare.in","am":""},"saurabh.u@solarsquare.in":{"n":"Saurabh.U","p":"SSE@123","t":"bdm","m":"shivam.bharara@solarsquare.in","am":""},"mohit.r@solarsquare.in":{"n":"Mohit.R","p":"SSE@123","t":"bdm","m":"sadik.a@solarsquare.in","am":"kshitij.s@solarsquare.in"},"amar.r@solarsquare.in":{"n":"Amar.R","p":"SSE@123","t":"bdm","m":"abu.s@solarsquare.in","am":""},"nayan.k@solarsquare.in":{"n":"Nayan.K","p":"Am@12345","t":"bdm","m":"kshitij.s@solarsquare.in","am":""},"abhishek.mishra@solarsquare.in":{"n":"Abhishek.Mishra","p":"SSE@123","t":"ados","m":"abhishek.mishra@solarsquare.in","am":""},"subhajit.p@solarsquare.in":{"n":"Subhajit.P","p":"SSE@123","t":"bdm","m":"subhajit.p@solarsquare.in","am":""},"riddhi.j@solarsquare.in":{"n":"Riddhi.J","p":"SSE@123","t":"bdm","m":"riddhi.j@solarsquare.in","am":""},"muskan.m@solarsquare.in":{"n":"Muskan.M","p":"SSE@123","t":"ados","m":"muskan.m@solarsquare.in","am":"kshitij.s@solarsquare.in"},"tanya.d@solarsquare.in":{"n":"Tanya.D","p":"Shadow@123","t":"bdm","m":"muskan.m@solarsquare.in","am":""},"shubham.saini@solarsquare.in":{"n":"Shubham.Saini","p":"SSE@123","t":"bdm","m":"kshitij.s@solarsquare.in","am":""},"subham.g@solarsquare.in":{"n":"Subham.G","p":"SSE@123","t":"bdm","m":"subham.g@solarsquare.in","am":"kshitij.s@solarsquare.in"},"tulika.k@solarsquare.in":{"n":"Tulika.K","p":"SSE@123","t":"bdm","m":"varun.s@solarsquare.in","am":""},"dev.k@solarsquare.in":{"n":"Dev.K","p":"SSE@123","t":"bdm","m":"kshitij.s@solarsquare.in","am":"kshitij.s@solarsquare.in"},"ayushi.m@solarsquare.in":{"n":"Ayushi.M","p":"g0661@@@","t":"bdm","m":"muskan.m@solarsquare.in","am":""},"shreya.b@solarsquare.in":{"n":"Shreya.B","p":"Accounts@!2120","t":"bdm","m":"kshitij.s@solarsquare.in","am":""},"praveen.k@solarsquare.in":{"n":"Praveen.K","p":"SSE@123","t":"bdm","m":"abhishek.mishra@solarsquare.in","am":""},"sagar.g@solarsquare.in":{"n":"Sagar.G","p":"SSE@123","t":"bdm","m":"kshitij.s@solarsquare.in","am":""},"abu.s@solarsquare.in":{"n":"Abu.S","p":"Salim@sse","t":"ados","m":"abu.s@solarsquare.in","am":""},"minesh.m@solarsquare.in":{"n":"Minesh.M","p":"SSE@123","t":"bdm","m":"sadik.a@solarsquare.in","am":""},"rishabh.p@solarsquare.in":{"n":"Rishabh.P","p":"SSE@123","t":"bdm","m":"abhishek.mishra@solarsquare.in","am":""},"shivam.bharara@solarsquare.in":{"n":"Shivam.Bharara","p":"SSE@123","t":"ados","m":"shivam.bharara@solarsquare.in","am":""},"sohan.m@solarsquare.in":{"n":"Sohan.M","p":"SSE@123","t":"bdm","m":"sadik.a@solarsquare.in","am":""},"zohebali.k@solarsquare.in":{"n":"Zohebali.K","p":"SSE@123","t":"bdm","m":"abu.s@solarsquare.in","am":""},"harsh.y@solarsquare.in":{"n":"Harsh.Y","p":"SSE@123","t":"bdm","m":"sadik.a@solarsquare.in","am":""},"rishi.r@solarsquare.in":{"n":"Rishi.R","p":"SSE@123","t":"bdm","m":"sadik.a@solarsquare.in","am":""},"ashi.u@solarsquare.in":{"n":"Ashi.U","p":"SSE@123","t":"bdm","m":"sadik.a@solarsquare.in","am":""},"pratik.n@solarsquare.in":{"n":"Pratik.N","p":"SSE@123","t":"bdm","m":"sadik.a@solarsquare.in","am":""},"sudhanshu.s@solarsquare.in":{"n":"Sudhanshu.S","p":"SSE@123","t":"bdm","m":"sudhanshu.s@solarsquare.in","am":""},"himanshi.a@solarsquare.in":{"n":"Himanshi.A","p":"SSE@123","t":"bdm","m":"himanshi.a@solarsquare.in","am":""},"ritika.l@solarsquare.in":{"n":"Ritika.L","p":"Ritz@2333","t":"ados","m":"ritika.l@solarsquare.in","am":""},"sanjana.p@solarsquare.in":{"n":"Sanjana.P","p":"SSE@123","t":"bdm","m":"sanjana.p@solarsquare.in","am":""},"swapnil.i@solarsquare.in":{"n":"Swapnil.I","p":"SSE@123","t":"ados","m":"swapnil.i@solarsquare.in","am":""},"mohsin.s@homes.solarsquare.in":{"n":"Mohsin.S","p":"SSE@123","t":"bdm","m":"abu.s@solarsquare.in","am":""},"varun.s@solarsquare.in":{"n":"Varun.S","p":"SSE@123","t":"ados","m":"varun.s@solarsquare.in","am":""},"mercy.b@solarsquare.in":{"n":"Mercy.B","p":"SSE@123","t":"bdm","m":"abhishek.mishra@solarsquare.in","am":""},"kundan.s@solarsquare.in":{"n":"Kundan.S","p":"SSE@123","t":"bdm","m":"abu.s@solarsquare.in","am":""},"gaurav.khurud@solarsquare.in":{"n":"Gaurav.Khurud","p":"SSE@123","t":"bdm","m":"swapnil.i@solarsquare.in","am":""},"abhinav.c@solarsquare.in":{"n":"Abhinav.C","p":"SSE@123","t":"bdm","m":"abu.s@solarsquare.in","am":""},"ratan.s@solarsquare.in":{"n":"Ratan.S","p":"SSE@123","t":"bdm","m":"ratan.s@solarsquare.in","am":""},"gaurav.shah@solarsquare.in":{"n":"Gaurav.Shah","p":"SSE@123","t":"bdm","m":"varun.s@solarsquare.in","am":""},"ganesh.pardeshi@solarsquare.in":{"n":"Ganesh.Pardeshi","p":"SSE@123","t":"bdm","m":"swapnil.i@solarsquare.in","am":""},"mrinal.m@homes.solarsquare.in":{"n":"Mrinal.M","p":"SSE@123","t":"bdm","m":"mrinal.m@homes.solarsquare.in","am":""},"parth.joshi@solarsquare.in":{"n":"Parth.Joshi","p":"SSE@123","t":"bdm","m":"abu.s@solarsquare.in","am":""},"satish.chandbodhale@solarsquare.in":{"n":"Satish.Chandbodhale","p":"SSE@123","t":"bdm","m":"muskan.m@solarsquare.in","am":""},"shruti.s@solarsquare.in":{"n":"Shruti.S","p":"SSE@123","t":"admin","m":"cental acces","am":""},"tauseef.i@solarsquare.in":{"n":"Tauseef.I","p":"SSE@123","t":"bdm","m":"tauseef.i@solarsquare.in","am":""},"neeriksha.m@solarsquare.in":{"n":"Neeriksha.M","p":"SSE@123","t":"admin","m":"cental acces","am":""},"sagar.takalkar@solarsquare.in":{"n":"Sagar.Takalkar","p":"SSE123","t":"bdm","m":"varun.s@solarsquare.in","am":""},"divya.tulsani@solarsquare.in":{"n":"Divya.Tulsani","p":"SSE@123","t":"bdm","m":"divya.tulsani@solarsquare.in","am":""},"akansha.chiwande@solarsquare.in":{"n":"Akansha.Chiwande","p":"SSE@123","t":"bdm","m":"varun.s@solarsquare.in","am":""},"khushi.meena@solarsquare.in":{"n":"Khushi.Meena","p":"Solar@07B2BBDMsheet","t":"bdm","m":"ritika.l@solarsquare.in","am":""},"ananya.pundir@solarsquare.in":{"n":"Ananya.Pundir","p":"SSE@123","t":"bdm","m":"abu.s@solarsquare.in","am":""},"tarika.m@solarsquare.in":{"n":"Tarika.M","p":"T@r1ka14","t":"bdm","m":"sourabh.khade@solarsquare.in","am":""}};
-const MGRNAME={};
-const ADOS_MAP={"swapnil.i@solarsquare.in":["Akshay.S","Gaurav.Khurud","Ganesh.Pardeshi"],"shivam.bharara@solarsquare.in":["Saurabh.U"],"kshitij.s@solarsquare.in":["Mohit.R","Nayan.K","Muskan.M","Shubham.Saini","Subham.G","Dev.K","Shreya.B","Sagar.G"],"abu.s@solarsquare.in":["Amar.R","Zohebali.K","Mohsin.S","Kundan.S","Abhinav.C","Parth.Joshi","Ananya.Pundir"],"muskan.m@solarsquare.in":["Tanya.D","Ayushi.M","Satish.Chandbodhale"],"varun.s@solarsquare.in":["Tulika.K","Gaurav.Shah","Sagar.Takalkar","Akansha.Chiwande"],"abhishek.mishra@solarsquare.in":["Praveen.K","Rishabh.P","Mercy.B"],"sadik.a@solarsquare.in":["Minesh.M","Sohan.M","Harsh.Y","Rishi.R","Ashi.U","Pratik.N"],"ritika.l@solarsquare.in":["Khushi.Meena"],"sourabh.khade@solarsquare.in":["Tarika.M"]};
-// Roles:
-//   'admin' — full access (all rows)
-//   'ados'  — sees only BDMs listed in ADOS_MAP[email]  (their team)
-//   'mgr'   — legacy: sees rows where record.mgr == self (kept for backward compat)
-//   'bdm'   — sees only own rows (record.bdm == self)
+// ===== ACCESS CONTROL — LIVE fetch from User_Setting sheet on every login =====
+// Users, passwords, ADOS mapping are fetched fresh each time → changes take effect instantly.
+// Falls back to a minimal baked-in set only if the Apps Script is unreachable.
+
+// Role logic (mirrors col H of User_Setting):
+//   col H = "Cental acces" → admin (full access)
+//   login email appears as a col H value for other rows → ados (team view)
+//   otherwise → bdm (own leads only)
+
+let USERS={};        // email → {n,p,t,m,am}  — populated on login
+let MGRNAME={};      // kept for compat
+let ADOS_MAP={};     // ados_email → [bdm_names]
+let ADOS_EMAIL_MAP={}; // ados_email → [bdm_emails]
+
 const VIEWER={email:'',name:'',role:''};
+
+function nmeEmail(email){
+  const e=(email||'').split('@')[0];
+  return e.split('.').filter(Boolean).map(p=>p[0].toUpperCase()+p.slice(1)).join('.');
+}
+
+// Build USERS + ADOS_MAP from raw rows fetched from sheet
+function buildUserIndex(rows){
+  // rows: [{name, email, pw, type, mgr, am}, ...]
+  USERS={};ADOS_MAP={};ADOS_EMAIL_MAP={};MGRNAME={};
+
+  // Pass 1: find all emails that appear as ADOS Mapping (col H) for other rows
+  const adosEmailsInColH=new Set();
+  rows.forEach(r=>{
+    const am=(r.am||'').trim().toLowerCase();
+    if(am&&am!=='cental acces'&&am.includes('@'))adosEmailsInColH.add(am);
+  });
+
+  // Pass 2: build ados → bdm mapping (who appears in col H = their email)
+  const adosToBdmEmails={};
+  rows.forEach(r=>{
+    const em=(r.email||'').trim().toLowerCase();
+    const am=(r.am||'').trim().toLowerCase();
+    if(am&&am!=='cental acces'&&am.includes('@')){
+      (adosToBdmEmails[am]=adosToBdmEmails[am]||[]).push(em);
+    }
+  });
+
+  // Pass 3: assign roles + build USERS map
+  rows.forEach(r=>{
+    const em=(r.email||'').trim().toLowerCase();
+    if(!em||!r.pw)return;
+    const am=(r.am||'').trim().toLowerCase();
+    const n=r.name||nmeEmail(em);
+
+    let t;
+    if(am==='cental acces') t='admin';
+    else if(adosEmailsInColH.has(em)) t='ados';
+    else t='bdm';
+
+    USERS[em]={n,p:r.pw,t,m:(r.mgr||'').toLowerCase(),am};
+  });
+
+  // Force safeek as admin
+  if(USERS['safeek.m@solarsquare.in'])USERS['safeek.m@solarsquare.in'].t='admin';
+
+  // Pass 4: build ADOS_MAP (name-based for inScope matching)
+  Object.keys(adosToBdmEmails).forEach(ados=>{
+    ADOS_EMAIL_MAP[ados]=adosToBdmEmails[ados];
+    ADOS_MAP[ados]=adosToBdmEmails[ados].map(bdmEmail=>nmeEmail(bdmEmail));
+  });
+}
 
 function authenticate(email,pass){
   email=(email||'').trim().toLowerCase();
@@ -1622,17 +1680,17 @@ function authenticate(email,pass){
   if(!u||u.p!==pass)return false;
   VIEWER.email=email;
   VIEWER.name=u.n;
-  VIEWER.role=u.t; // 'admin' | 'ados' | 'mgr' | 'bdm'
+  VIEWER.role=u.t;
   return true;
 }
 
 function roleLabel(){
-  if(VIEWER.role==='admin') return 'Admin · full access';
+  if(VIEWER.role==='admin')return 'Admin · full access';
   if(VIEWER.role==='ados'){
     const cnt=(ADOS_MAP[VIEWER.email]||[]).length;
     return `ADOS · ${cnt} BDM${cnt!==1?'s':''}`;
   }
-  if(VIEWER.role==='mgr') return 'Manager · team view';
+  if(VIEWER.role==='mgr')return 'Manager · team view';
   return 'BDM · own leads';
 }
 
@@ -1643,23 +1701,71 @@ function renderWhoami(){
 
 function logout(){
   VIEWER.email='';VIEWER.name='';VIEWER.role='';
+  USERS={};ADOS_MAP={};ADOS_EMAIL_MAP={};
   FKEYS.forEach(k=>F[k].clear());
   document.getElementById('lpass').value='';
   document.getElementById('lerr').classList.remove('show');
   document.getElementById('login').classList.remove('hidden');
+  // Reset login button
+  const btn=document.getElementById('lbtn');
+  btn.textContent='Sign in';btn.disabled=false;
   document.getElementById('lemail').focus();
 }
 
-function doLogin(){
-  const em=document.getElementById('lemail').value;
+// Show login status message
+function setLoginMsg(msg,isErr){
+  const el=document.getElementById('lerr');
+  el.textContent=msg;
+  el.classList.toggle('show',!!msg);
+  if(!isErr)el.style.cssText='display:block;background:#e7f6ee;color:#1f9d6b;border-radius:10px;padding:9px 12px;font-size:12.5px;font-weight:600;margin-bottom:14px;';
+  else el.style.cssText='';  // reset to default red
+}
+
+async function doLogin(){
+  const em=document.getElementById('lemail').value.trim().toLowerCase();
   const pw=document.getElementById('lpass').value;
-  const err=document.getElementById('lerr');
+  if(!em||!pw){setLoginMsg('Please enter your email and password.',true);return;}
+
+  const btn=document.getElementById('lbtn');
+  btn.textContent='🔄 Signing in…';btn.disabled=true;
+
+  // Step 1: Fetch live User_Setting from Apps Script
+  const APPS_URL=APPS_SCRIPT_URL;
+  let usersFetched=false;
+
+  if(APPS_URL){
+    try{
+      setLoginMsg('Connecting to server…',false);
+      const res=await fetch(APPS_URL+'?sheet=users',{redirect:'follow'});
+      if(res.ok){
+        const text=await res.text();
+        const first=text.trimStart().slice(0,1);
+        if(first==='['){
+          const rows=JSON.parse(text);
+          buildUserIndex(rows);
+          usersFetched=true;
+        }
+      }
+    }catch(e){console.warn('Live user fetch failed:',e.message);}
+  }
+
+  // Step 2: If live fetch failed, show error (don't fall back silently)
+  if(!usersFetched){
+    btn.textContent='Sign in';btn.disabled=false;
+    setLoginMsg('⚠ Could not reach the server. Check your connection and try again.',true);
+    return;
+  }
+
+  // Step 3: Authenticate against live data
+  setLoginMsg('',false);
   if(authenticate(em,pw)){
-    err.classList.remove('show');
+    document.getElementById('lerr').classList.remove('show');
     document.getElementById('login').classList.add('hidden');
+    btn.textContent='Sign in';btn.disabled=false;
     startDashboard();
   }else{
-    err.classList.add('show');
+    btn.textContent='Sign in';btn.disabled=false;
+    setLoginMsg('Invalid email or password. Please try again.',true);
     document.getElementById('lpass').select();
   }
 }
@@ -2826,7 +2932,7 @@ function startDashboard(){
   STARTED=true;
 }
 // wire up login form
-document.getElementById('lbtn').addEventListener('click',doLogin);
+document.getElementById('lbtn').addEventListener('click',()=>doLogin());
 ['lemail','lpass'].forEach(id=>document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();}));
 document.getElementById('lemail').focus();
 </script>
