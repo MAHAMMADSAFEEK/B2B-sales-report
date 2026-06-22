@@ -354,6 +354,28 @@
     <div class="lfield"><label>Password</label><input type="password" id="lpass" placeholder="Password" autocomplete="current-password"></div>
     <button class="lbtn" id="lbtn">Sign in</button>
     <div class="lfoot">Access is restricted to your own leads.<br>Managers see their team; admins see everything.</div>
+    <!-- Apps Script URL — collapse by default, expand if login fails -->
+    <div style="margin-top:14px;border-top:1px solid var(--line);padding-top:12px;">
+      <div onclick="var w=this.nextElementSibling;w.style.display=w.style.display==='none'?'block':'none';this.querySelector('#adv-arrow').textContent=w.style.display==='none'?'▶':'▼';"
+        style="font-size:11px;color:var(--muted);cursor:pointer;user-select:none;display:flex;align-items:center;gap:5px;">
+        <span id="adv-arrow">▶</span> <span>Apps Script URL (change if login fails)</span>
+      </div>
+      <div id="adv-url-wrap" style="display:none;margin-top:8px;">
+        <div class="lfield" style="margin-bottom:6px;">
+          <label>Apps Script /exec URL</label>
+          <input type="url" id="l-apps-url" placeholder="https://script.google.com/macros/s/…/exec"
+            style="font-size:11px;" autocomplete="off">
+        </div>
+        <button onclick="saveAppsUrl()"
+          style="font-size:11.5px;padding:7px 14px;border-radius:8px;border:1px solid var(--b500);background:var(--b50);color:var(--b700);cursor:pointer;font-weight:600;">
+          💾 Save URL &amp; retry login
+        </button>
+        <div style="font-size:10px;color:var(--muted);margin-top:6px;line-height:1.5;">
+          Paste the /exec URL from your new Apps Script deployment.<br>
+          It will be remembered for this browser session.
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 <div class="wrap">
@@ -1725,6 +1747,20 @@ function setLoginMsg(msg,isErr){
   if(!msg)el.style.display='none';
 }
 
+function saveAppsUrl(){
+  const inp=document.getElementById('l-apps-url');
+  const url=(inp&&inp.value||'').trim();
+  if(!url||!url.includes('/exec')){alert('Please paste a valid Apps Script /exec URL.');return;}
+  try{sessionStorage.setItem('bdm_apps_url',url);}catch(e){}
+  // patch the live constant
+  window._appsScriptUrlOverride=url;
+  doLogin();
+}
+
+function getAppsUrl(){
+  return window._appsScriptUrlOverride||APPS_SCRIPT_URL;
+}
+
 async function doLogin(){
   const em=document.getElementById('lemail').value.trim().toLowerCase();
   const pw=document.getElementById('lpass').value;
@@ -1734,7 +1770,7 @@ async function doLogin(){
   btn.textContent='🔄 Signing in…';btn.disabled=true;
   setLoginMsg('',false);
 
-  const APPS_URL=APPS_SCRIPT_URL;
+  const APPS_URL=getAppsUrl();
 
   // Must have Apps Script URL configured
   if(!APPS_URL){
@@ -1878,7 +1914,12 @@ function refreshFromCSV(text){
 //   3. Deploy → New deployment → Web app
 //      Execute as: Me   |   Who has access: Anyone
 //   4. Copy the /exec URL and paste it between the quotes below:
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwNM2-6olxY_yp5FBXWZRQv_662PiHd8p8EUUEmFRS4zJiVXDMnuUbPSlxZE7Cqvrsr/exec';  // ✓ deployed
+const APPS_SCRIPT_URL = (function(){
+  // Try sessionStorage first (set from login screen URL input)
+  try{const s=sessionStorage.getItem('bdm_apps_url');if(s&&s.includes('/exec'))return s;}catch(e){}
+  // Baked-in default — update this when you create a new deployment
+  return 'https://script.google.com/macros/s/AKfycbwqfDcsw2HRW29zOTHvMMJ5IL5PKJ9xzgVruZiq4AABDPj7FAmAZphdNygOItfQDn_n/exec';
+})();
 
 // OPTION B — Share the sheet as "Anyone with the link → Viewer"
 //   (File → Share → General access → Anyone with the link)
