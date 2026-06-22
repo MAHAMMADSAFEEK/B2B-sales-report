@@ -1155,24 +1155,40 @@ function pctCls(p){return p>=20?'hi':p>=8?'mid':'lo';}
 function pctCell(n,d){const p=d?100*n/d:0;return `<td><span class="pct ${pctCls(p)}">${p.toFixed(1)}%</span></td>`;}
 function cohortThead(label){return `<thead><tr><th>${label}</th><th>Meetings scheduled</th><th>Meetings completed</th><th>Completed %</th><th>Sale won</th><th>Won % (of scheduled)</th><th>Won % (of completed)</th><th>HOTO</th><th>HOTO % (of won)</th></tr></thead>`;}
 function buildCohort(rows,mode,clickableKeys){
-  const agg={};const A=k=>agg[k]||(agg[k]={s:[],c:[],w:[],h:[]});
+  const agg={};const A=k=>agg[k]||(agg[k]={s:[],c:[],w:[],h:[],leads:new Set()});
   if(mode==='month'){
-    rows.forEach(r=>{const ms=/^\d{4}-\d{2}$/.test(r.msM)?r.msM:'(no date)';A(ms).s.push(r);if(r.cmpM)A(r.cmpM).c.push(r);if(r.wonM)A(r.wonM).w.push(r);if(r.hotoM)A(r.hotoM).h.push(r);});
+    rows.forEach(r=>{
+      const ms=/^\d{4}-\d{2}$/.test(r.msM)?r.msM:'(no date)';
+      A(ms).s.push(r);
+      A(ms).leads.add(r.lead);          // track unique leads for tooltip
+      if(r.cmpM)A(r.cmpM).c.push(r);
+      if(r.wonM)A(r.wonM).w.push(r);
+      if(r.hotoM)A(r.hotoM).h.push(r);
+    });
   }else{
     const kf=mode==='bdm'?(r=>r.bdm||'(no BDM)'):(r=>r.city||'(no city)');
-    rows.forEach(r=>{const a=A(kf(r));a.s.push(r);if(r.cmpM)a.c.push(r);if(r.wonM)a.w.push(r);if(r.hoto)a.h.push(r);});
+    rows.forEach(r=>{const a=A(kf(r));a.s.push(r);a.leads.add(r.lead);if(r.cmpM)a.c.push(r);if(r.wonM)a.w.push(r);if(r.hoto)a.h.push(r);});
   }
   let keys=Object.keys(agg);
   if(mode==='month')keys.sort();else keys.sort((a,b)=>agg[b].s.length-agg[a].s.length);
   const disp=mode==='month'?(k=>/^\d{4}-\d{2}$/.test(k)?monDisp(k):k):(x=>x);
   const L=a=>a.length;
   const keyTd=k=>clickableKeys?`<td class="keycell kclick" data-kind="cohort" data-dim="${mode}" data-val="${(''+k).replace(/"/g,'&quot;')}">${disp(k)}</td>`:`<td class="keycell">${disp(k)}</td>`;
-  const rowH=(label,a)=>`<tr>`+label+`<td>${dbox(a.s,L(a.s),'sched')}</td><td>${dbox(a.c,L(a.c),'green')}</td>${pctCell(L(a.c),L(a.s))}<td>${dbox(a.w,L(a.w),'blue')}</td>${pctCell(L(a.w),L(a.s))}${pctCell(L(a.w),L(a.c))}<td>${dbox(a.h,L(a.h),'sched')}</td>${pctCell(L(a.h),L(a.w))}</tr>`;
+  // Scheduled cell: show meeting count + unique leads note if different
+  const schedCell=(a)=>{
+    const meetings=L(a.s);
+    const uniq=a.leads.size;
+    const fuCount=meetings-uniq;
+    const note=fuCount>0?`<div style="font-size:10px;color:var(--muted);margin-top:2px;">${uniq} unique + ${fuCount} F/U</div>`:'';
+    return `<td>${dbox(a.s,meetings,'sched')}${note}</td>`;
+  };
+  const rowH=(label,a)=>`<tr>`+label+schedCell(a)+`<td>${dbox(a.c,L(a.c),'green')}</td>${pctCell(L(a.c),L(a.s))}<td>${dbox(a.w,L(a.w),'blue')}</td>${pctCell(L(a.w),L(a.s))}${pctCell(L(a.w),L(a.c))}<td>${dbox(a.h,L(a.h),'sched')}</td>${pctCell(L(a.h),L(a.w))}</tr>`;
   let body;
   if(!keys.length)body='<tr><td colspan=9 class=empty>No data</td></tr>';
   else{
     body=keys.map(k=>rowH(keyTd(k),agg[k])).join('');
-    const T={s:[],c:[],w:[],h:[]};keys.forEach(k=>{T.s=T.s.concat(agg[k].s);T.c=T.c.concat(agg[k].c);T.w=T.w.concat(agg[k].w);T.h=T.h.concat(agg[k].h);});
+    const T={s:[],c:[],w:[],h:[],leads:new Set()};
+    keys.forEach(k=>{T.s=T.s.concat(agg[k].s);T.c=T.c.concat(agg[k].c);T.w=T.w.concat(agg[k].w);T.h=T.h.concat(agg[k].h);agg[k].leads.forEach(id=>T.leads.add(id));});
     body+=rowH('<td class="keycell">TOTAL</td>',T).replace('<tr>','<tr class="totrow">');
   }
   return {keyHead:{month:'Month',bdm:'BDM',city:'City'}[mode],body};
