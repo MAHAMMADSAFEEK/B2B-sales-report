@@ -176,24 +176,30 @@
   .flag.fup{background:#fcf3d9;color:#9a6a06}
   .notupd{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:6px;background:#fdecea;color:#c0392b}
 
-  /* ── Sales Calendar ── */
-  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:12px;}
-  .cal-head{text-align:center;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);padding:6px 0;}
-  .cal-cell{min-height:88px;border:1px solid var(--line);border-radius:10px;padding:5px 6px;background:#fff;cursor:pointer;transition:box-shadow .15s;}
-  .cal-cell:hover{box-shadow:0 3px 14px rgba(21,84,184,.13);}
-  .cal-cell.today{border:2px solid var(--b500);background:var(--b50);}
-  .cal-cell.other-month{background:#f7f8fb;opacity:.5;cursor:default;}
-  .cal-cell.other-month:hover{box-shadow:none;}
-  .cal-daynum{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:3px;}
-  .cal-cell.today .cal-daynum{color:var(--b600);font-size:12px;}
-  .cal-badge{font-size:9.5px;font-weight:700;padding:1px 5px;border-radius:5px;display:block;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
-  .cb-fresh{background:#dbeafe;color:#1554b8;}
-  .cb-fu{background:#e9d5ff;color:#6b21a8;}
-  .cb-won{background:#dcfce7;color:#166534;}
-  .cb-lost{background:#fee2e2;color:#991b1b;}
-  .cb-conf{background:#fef9c3;color:#854d0e;}
-  .cb-pend{background:#f1f5f9;color:#64748b;}
-  .cal-more{font-size:9px;color:var(--b600);font-weight:600;margin-top:1px;}
+  /* ── Sales Calendar — professional bordered grid ── */
+  .cal-outer{border:3px solid #1a3a7c;border-radius:14px;overflow:hidden;box-shadow:0 6px 32px rgba(21,58,124,.18);}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:0;}
+  .cal-head{text-align:center;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#fff;padding:10px 4px;background:linear-gradient(135deg,#1a3a7c,#2860c8);border-right:1px solid rgba(255,255,255,.18);}
+  .cal-head:last-child{border-right:none;}
+  .cal-cell{min-height:96px;border-right:1.5px solid #c7d7f5;border-bottom:1.5px solid #c7d7f5;padding:6px 8px;background:#f5f8ff;transition:background .12s,box-shadow .12s;position:relative;}
+  .cal-cell:nth-child(7n){border-right:none;}
+  .cal-cell.clickable{cursor:pointer;}
+  .cal-cell.clickable:hover{background:#dde9ff;box-shadow:inset 0 0 0 2px #2860c8;}
+  .cal-cell.today{background:#e8f0ff;box-shadow:inset 0 0 0 2.5px #1554b8;}
+  .cal-cell.has-meetings{background:#eef3ff;}
+  .cal-cell.other-month{background:#f0f2f8;opacity:.55;cursor:default;}
+  .cal-cell.other-month:hover{background:#f0f2f8;box-shadow:none;}
+  .cal-daynum{font-size:12px;font-weight:800;color:#1a3a7c;margin-bottom:4px;line-height:1;}
+  .cal-cell.today .cal-daynum{background:#1554b8;color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;margin-bottom:5px;}
+  .cal-cell.other-month .cal-daynum{color:#9aa6c0;}
+  .cal-badge{font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:4px;display:block;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;border-left:3px solid transparent;}
+  .cb-fresh{background:#dbeafe;color:#1554b8;border-left-color:#2f7bf4;}
+  .cb-fu{background:#ede9fe;color:#6d28d9;border-left-color:#9b6dff;}
+  .cb-won{background:#d1fae5;color:#065f46;border-left-color:#1f9d6b;}
+  .cb-lost{background:#fee2e2;color:#991b1b;border-left-color:#d6493b;}
+  .cb-conf{background:#fef3c7;color:#92400e;border-left-color:#f59e0b;}
+  .cb-pend{background:#e2e8f0;color:#475569;border-left-color:#94a3b8;}
+  .cal-more{font-size:9px;color:#2860c8;font-weight:700;margin-top:2px;}
   /* Calendar popup */
   .cal-popup{position:fixed;inset:0;z-index:250;background:rgba(10,20,70,.6);display:flex;align-items:center;justify-content:center;padding:20px;}
   .cal-popup-box{background:#fff;border-radius:18px;max-width:660px;width:100%;max-height:84vh;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,.35);}
@@ -733,7 +739,7 @@
         <span style="display:flex;align-items:center;gap:4px;"><span class="cal-badge cb-pend" style="display:inline-block;width:12px;height:12px;border-radius:3px;padding:0;"></span>Other</span>
       </div>
       <!-- Calendar grid -->
-      <div id="cal-grid-wrap" style="margin-top:8px;"></div>
+      <div id="cal-grid-wrap" style="margin-top:14px;"></div>
     </div>
     <!-- Summary stats below calendar -->
     <div id="cal-stats-row" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px;"></div>
@@ -2369,43 +2375,50 @@ function renderCalendar(){
   const startDow=firstDay.getUTCDay();
   const todayISO=new Date(TODAY_UTC).toISOString().slice(0,10);
 
-  let html='<div class="cal-grid">';
+  // Outer container with dark blue border
+  let html='<div class="cal-outer"><div class="cal-grid">';
   WDAYS.forEach(d=>html+=`<div class="cal-head">${d}</div>`);
   for(let i=0;i<startDow;i++)html+='<div class="cal-cell other-month"></div>';
   for(let d=1;d<=daysInMonth;d++){
     const iso=yy+'-'+String(mm).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     const dayRows=byDate[iso]||[];
     const isToday=iso===todayISO;
-    const maxShow=3;
+    const hasMeet=dayRows.length>0;
+    const maxShow=4;
+    // Day number — circle for today
+    const dayNum=isToday?`<div class="cal-daynum">${d}</div>`:`<div class="cal-daynum">${d}</div>`;
     let badges=dayRows.slice(0,maxShow).map(r=>{
       const cls=calMeetClass(r);
-      const lbl=r.proj?r.proj.slice(0,18):r.ftype==='Follow-up Meeting'?'Follow-up':'Fresh';
+      const lbl=r.proj?r.proj.slice(0,20):r.ftype==='Follow-up Meeting'?'Follow-up':'Fresh';
       return `<span class="cal-badge ${cls}">${lbl}</span>`;
     }).join('');
     if(dayRows.length>maxShow)badges+=`<div class="cal-more">+${dayRows.length-maxShow} more</div>`;
-    const clickable=dayRows.length?`onclick="openCalPopup('${iso}')" `:'';
-    html+=`<div class="cal-cell ${isToday?'today':''}" ${clickable}style="${dayRows.length?'':'cursor:default;'}">
-      <div class="cal-daynum">${d}</div>${badges}</div>`;
+    const clickFn=hasMeet?`onclick="openCalPopup('${iso}')" `:'';
+    const cls=['cal-cell',isToday?'today':'',hasMeet?'has-meetings clickable':''].filter(Boolean).join(' ');
+    html+=`<div class="${cls}" ${clickFn}>${dayNum}${badges}</div>`;
   }
-  // Fill remaining cells
+  // Fill trailing cells
   const totalCells=startDow+daysInMonth;const rem=7-totalCells%7;
   if(rem<7)for(let i=0;i<rem;i++)html+='<div class="cal-cell other-month"></div>';
-  html+='</div>';
+  html+='</div></div>'; // close .cal-grid + .cal-outer
   document.getElementById('cal-grid-wrap').innerHTML=html;
 
-  // Stats row
+  // Stats row — refined card style
   const total=calRows.length;
   const fresh=calRows.filter(r=>r.ftype==='Fresh Meeting').length;
   const fu=calRows.filter(r=>r.ftype==='Follow-up Meeting').length;
   const completed=calRows.filter(r=>(r.me||'').slice(0,7)===monthVal).length;
   const won=calRows.filter(r=>(r.fstat||'').includes('Sale Done')).length;
-  const kpi=(v,l,c)=>`<div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;"><div style="font-size:24px;font-weight:800;color:${c};">${v}</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);">${l}</div></div>`;
+  const kpi=(v,l,c,icon)=>`<div style="background:#fff;border:1.5px solid #c7d7f5;border-top:4px solid ${c};border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;">
+    <div style="font-size:26px;line-height:1;">${icon}</div>
+    <div><div style="font-size:26px;font-weight:800;color:${c};line-height:1;">${v}</div>
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#64748b;margin-top:3px;">${l}</div></div></div>`;
   document.getElementById('cal-stats-row').innerHTML=
-    kpi(total,'Meetings Scheduled','var(--b700)')+
-    kpi(fresh,'Fresh Meetings','#2f7bf4')+
-    kpi(fu,'Follow-ups','#9b6dff')+
-    kpi(completed,'Completed','var(--green)')+
-    kpi(won,'Sale Won','#1f9d6b');
+    kpi(total,'Meetings Scheduled','#1a3a7c','📅')+
+    kpi(fresh,'Fresh Meetings','#2f7bf4','🆕')+
+    kpi(fu,'Follow-ups','#9b6dff','🔄')+
+    kpi(completed,'Completed','#1f9d6b','✅')+
+    kpi(won,'Sale Won','#1f9d6b','🏆');
 
   // Store for popup
   window._calByDate=byDate;
