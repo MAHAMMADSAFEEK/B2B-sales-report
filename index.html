@@ -1181,8 +1181,12 @@ function render(){
   const hoto=hotoRecs.length, hotoCap=hotoRecs.reduce((s,p)=>s+(p.r.size||0),0);
   const pipeCap=projRecs.reduce((s,p)=>s+Math.max(0,...p.rows.map(x=>x.size||0)),0);
   const winRate=nLeads?100*won/nLeads:0;
-  const fresh=rows.filter(r=>r.ftype==='Fresh Meeting').length,fu=rows.filter(r=>r.ftype==='Follow-up Meeting').length;
-  const K=[['Total leads',fmt(nLeads),'unique projects','c-b','bg-b','leads'],['Meetings held',fmt(nMeet),fresh+' fresh / '+fu+' follow-up','c-b','bg-ink','meetings'],
+  const fresh=ids.length;  // first row per lead = Fresh (by definition)
+  const fu=nMeet-fresh;    // remaining rows = Follow-ups (Revision 1, 2, 3…)
+  // Count leads that have at least one follow-up
+  const fuLeads=ids.filter(id=>LEADMAP[id].length>1).length;
+  const meetSub=`${fresh} fresh · ${fu} follow-ups (${fuLeads} leads with F/U)`;
+  const K=[['Total leads',fmt(nLeads),'unique projects','c-b','bg-b','leads'],['Meetings held',fmt(nMeet),meetSub,'c-b','bg-ink','meetings'],
     ['Sales won',fmt(won),'projects closed','c-g','bg-g','won'],['HOTO done',fmt(hoto),(won?Math.round(100*hoto/won):0)+'% of won handed over','c-b','bg-ink','hoto'],
     ['Win rate',winRate.toFixed(1)+'%','won ÷ leads','c-v','bg-v','winrate'],
     ['Won capacity',fmt(wonCap)+' KW','on closed deals','c-a','bg-a','woncap'],['Pipeline capacity',fmt(pipeCap)+' KW','all leads','c-b','bg-b','pipecap']];
@@ -1282,8 +1286,13 @@ function render(){
     const i=tr.dataset.i,car=tr.querySelector('.caret');
     if(tr.dataset.open){document.querySelectorAll(`#proj_tbl .task-row[data-pi="${i}"]`).forEach(x=>x.remove());tr.removeAttribute('data-open');car.classList.remove('open');return;}
     const p=window.PROJ[i];let h='';
-    p.rows.slice().sort((a,b)=>(a.ms||'').localeCompare(b.ms||'')).forEach(t=>{
-      h+=`<tr class="task-row" data-pi="${i}"><td></td><td colspan="2" style="padding-left:30px">${t.ftype||'meeting'}</td>
+    const sortedRows=p.rows.slice().sort((a,b)=>(a.ms||'').localeCompare(b.ms||''));
+    sortedRows.forEach((t,rowIdx)=>{
+      // Position-based label: row 0 = Fresh Meeting, row 1+ = Revision 1, 2, 3...
+      const rowLabel=rowIdx===0
+        ?`<span style="font-size:11px;font-weight:700;color:#1554b8;background:#dbeafe;padding:2px 7px;border-radius:5px;">Fresh</span>`
+        :`<span style="font-size:11px;font-weight:700;color:#6d28d9;background:#ede9fe;padding:2px 7px;border-radius:5px;">Revision ${rowIdx}</span>`;
+      h+=`<tr class="task-row" data-pi="${i}"><td></td><td colspan="2" style="padding-left:30px">${rowLabel}</td>
         <td>${t.proj||''}</td><td class="num">${t.size?fmt(t.size):''}</td>
         <td><span class="pill ${statusClass(t.fstat)}">${(t.fstat||'').replace('Meeting ','')||'—'}</span></td>
         <td>${t.hoto||''}</td>
@@ -1445,7 +1454,7 @@ function meetingThead(label){
 function buildMeeting(rows,mode,clickableKeys){
   const keyf=mode==='city'?(r=>r.city||'(no city)'):mode==='bdm'?(r=>r.bdm||'(no BDM)'):(r=>/^\d{4}-\d{2}$/.test(r.msM)?r.msM:'(no date)');
   const blank=()=>({sched:{n:0,f:0,u:0,m:[]},fu:{n:0,f:0,u:0,m:[]},won:{n:0,f:0,u:0,m:[]},lost:{n:0,f:0,u:0,m:[]},resch:{n:0,f:0,u:0,m:[]},canc:{n:0,f:0,u:0,m:[]},pending:{n:0,f:0,u:0,m:[]},hoto:{n:0,f:0,u:0,m:[]}});
-  const bump=(o,r)=>{o.n++;o.m.push(r);if(r.ftype==='Fresh Meeting')o.f++;else if(r.ftype==='Follow-up Meeting')o.u++;};
+  const bump=(o,r)=>{o.n++;o.m.push(r);if(!isFuByPosition(r))o.f++;else o.u++;};
   const agg={};
   rows.forEach(r=>{const k=keyf(r);const a=agg[k]||(agg[k]=blank());bump(a.sched,r);bump(a[classifyMtg(r.fstat)],r);if(r.hoto)bump(a.hoto,r);});
   let keys=Object.keys(agg);
@@ -1632,8 +1641,8 @@ function openJourney(idx){
 
   // Summary KPIs
   const totalMeetings=rows.length;
-  const freshCount=rows.filter(r=>r.ftype==='Fresh Meeting').length;
-  const fuCount=rows.filter(r=>r.ftype==='Follow-up Meeting').length;
+  const freshCount=1;  // by definition: 1 fresh (first row), rest are revisions
+  const fuCount=rows.length-1;
   const totalDays=daysBetween(firstMs, hoto||lastRow?.me||lastRow?.ms||'');
   const saleToDays=daysBetween(firstMs, wonDate||'');
   const hotoToSaleDays=(wonDate&&hoto)?daysBetween(wonDate,hoto):null;
@@ -1664,9 +1673,10 @@ function openJourney(idx){
   let prevDate='';
 
   rows.forEach((r,i)=>{
-    const isFresh=r.ftype==='Fresh Meeting';
-    const isF=r.ftype==='Follow-up Meeting';
-    const statText=(r.fstat||'').replace('Meeting ','').replace('completed ','');
+    // Position-based: row 0 = Fresh, rows 1+ = Revision 1, 2, 3...
+    const isFresh=i===0;
+    const isF=i>0;
+    const revNum=i;  // revision number (1-based for display)
     const isWonRow=/Sale Done/.test(r.fstat);
     const isLostRow=/Not interested/.test(r.fstat);
     const isPending=!r.me;
@@ -1675,7 +1685,7 @@ function openJourney(idx){
     else if(isLostRow)stepCls='step-lost';
     else if(isPending)stepCls='step-pending';
 
-    const typeLabel=isFresh?'Fresh Meeting '+(i+1):isF?'Follow-up Meeting '+(i+1-freshCount):'Meeting '+(i+1);
+    const typeLabel=isFresh?'Fresh Meeting':`Revision ${revNum}`;
     const delay=prevDate&&r.ms?daysBetween(prevDate,r.ms):null;
     prevDate=r.me||r.ms||prevDate;
 
@@ -1825,7 +1835,7 @@ function openProjects(members,title){
   document.getElementById('p_sub').textContent=(members?members.length:0)+' projects';
   const list=(members||[]).slice().sort((a,b)=>(a.r.pstat||'').localeCompare(b.r.pstat||'')||(b.r.size||0)-(a.r.size||0));
   const rws=list.map(p=>{const r=p.r;const ph=(p.rows.map(x=>x.hoto).filter(Boolean).sort()[0])||'';
-    const tot=p.rows.length;const isFresh=tot<=1&&!p.rows.some(x=>x.ftype==='Follow-up Meeting');
+    const tot=p.rows.length;const isFresh=tot<=1;
     const flag=isFresh?`<span class="flag fresh">Fresh</span>`:`<span class="flag fup">F/up ${tot}</span>`;
     return `<tr><td>${nu(r.city)}</td><td>${nu(r.bdm)}</td><td>${flag}<b>${nu(r.proj)}</b></td><td class="num">${r.size?fmt(r.size):'<span class="notupd">Not updated</span>'}</td>`+
       `<td><span class="pill ${statusClass(r.pstat)}">${(r.pstat||'').replace('Meeting ','')||'—'}</span></td>`+
@@ -2764,20 +2774,29 @@ const WDAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 let _calYM={y:new Date(TODAY_UTC).getUTCFullYear(),m:new Date(TODAY_UTC).getUTCMonth()};
 
 function calIsoKey(d){return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');}
+// Position-based meeting type: row is Follow-up if it's not the first row for that lead
+// (uses LEADMAP to check if any earlier meeting exists for the same lead)
+function isFuByPosition(r){
+  const leadRows=LEADMAP[r.lead];
+  if(!leadRows||leadRows.length<=1)return false;
+  const sorted=leadRows.slice().sort((a,b)=>(a.ms||'').localeCompare(b.ms||''));
+  return sorted[0]!==r && sorted[0].ms!==r.ms;
+}
+
 function calMeetClass(r){
   const s=(r.fstat||'').toLowerCase();
   if(s.includes('sale done'))return 'cb-won';
   if(s.includes('not interested'))return 'cb-lost';
   if(s.includes('confirmed')||s.includes('re-scheduled'))return 'cb-conf';
-  if(s.includes('completed'))return r.ftype==='Follow-up Meeting'?'cb-fu':'cb-fresh';
-  return r.ftype==='Follow-up Meeting'?'cb-fu':'cb-fresh';
+  if(s.includes('completed'))return isFuByPosition(r)?'cb-fu':'cb-fresh';
+  return isFuByPosition(r)?'cb-fu':'cb-fresh';
 }
 function calCardClass(r){
   const s=(r.fstat||'').toLowerCase();
   if(s.includes('sale done'))return 'st-won';
   if(s.includes('not interested'))return 'st-lost';
   if(s.includes('confirmed'))return 'st-conf';
-  return r.ftype==='Follow-up Meeting'?'st-fu':'st-fresh';
+  return isFuByPosition(r)?'st-fu':'st-fresh';
 }
 
 function renderCalendar(){
@@ -2857,7 +2876,7 @@ function renderCalendar(){
 
     let badges=dayRows.slice(0,maxShow).map(r=>{
       const cls=calMeetClass(r);
-      const lbl=r.proj?r.proj.slice(0,22):r.ftype==='Follow-up Meeting'?'Follow-up':'Fresh';
+      const lbl=r.proj?r.proj.slice(0,22):isFuByPosition(r)?'Revision':'Fresh';
       // Strikethrough if completed
       const style=r.me?'text-decoration:line-through;opacity:.75;':'';
       return `<span class="cal-badge ${cls}" style="${style}">${lbl}</span>`;
@@ -2879,8 +2898,8 @@ function renderCalendar(){
 
   // Stats row — added Pending card
   const total=calRows.length;
-  const fresh=calRows.filter(r=>r.ftype==='Fresh Meeting').length;
-  const fu=calRows.filter(r=>r.ftype==='Follow-up Meeting').length;
+  const fresh=calRows.filter(r=>!isFuByPosition(r)).length;
+  const fu=calRows.filter(r=>isFuByPosition(r)).length;
   const completed=calRows.filter(r=>r.me&&(r.me||'').slice(0,7)===monthVal).length;
   const pending=total-completed;
   const won=calRows.filter(r=>(r.fstat||'').includes('Sale Done')).length;
