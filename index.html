@@ -1182,7 +1182,7 @@ function render(){
   const pipeCap=projRecs.reduce((s,p)=>s+Math.max(0,...p.rows.map(x=>x.size||0)),0);
   const winRate=nLeads?100*won/nLeads:0;
   const fresh=ids.length;  // first row per lead = Fresh (by definition)
-  const fu=nMeet-fresh;    // remaining rows = Follow-ups (Revision 1, 2, 3…)
+  const fu=nMeet-fresh;    // remaining rows = Follow-ups (Follow-up 1, 2, 3…)
   // Count leads that have at least one follow-up
   const fuLeads=ids.filter(id=>LEADMAP[id].length>1).length;
   const meetSub=`${fresh} fresh · ${fu} follow-ups (${fuLeads} leads with F/U)`;
@@ -1288,10 +1288,10 @@ function render(){
     const p=window.PROJ[i];let h='';
     const sortedRows=p.rows.slice().sort((a,b)=>(a.ms||'').localeCompare(b.ms||''));
     sortedRows.forEach((t,rowIdx)=>{
-      // Position-based label: row 0 = Fresh Meeting, row 1+ = Revision 1, 2, 3...
+      // Position-based label: row 0 = Fresh Meeting, row 1+ = Follow-up 1, 2, 3...
       const rowLabel=rowIdx===0
         ?`<span style="font-size:11px;font-weight:700;color:#1554b8;background:#dbeafe;padding:2px 7px;border-radius:5px;">Fresh</span>`
-        :`<span style="font-size:11px;font-weight:700;color:#6d28d9;background:#ede9fe;padding:2px 7px;border-radius:5px;">Revision ${rowIdx}</span>`;
+        :`<span style="font-size:11px;font-weight:700;color:#6d28d9;background:#ede9fe;padding:2px 7px;border-radius:5px;">Follow-up ${rowIdx}</span>`;
       h+=`<tr class="task-row" data-pi="${i}"><td></td><td colspan="2" style="padding-left:30px">${rowLabel}</td>
         <td>${t.proj||''}</td><td class="num">${t.size?fmt(t.size):''}</td>
         <td><span class="pill ${statusClass(t.fstat)}">${(t.fstat||'').replace('Meeting ','')||'—'}</span></td>
@@ -1673,7 +1673,7 @@ function openJourney(idx){
   let prevDate='';
 
   rows.forEach((r,i)=>{
-    // Position-based: row 0 = Fresh, rows 1+ = Revision 1, 2, 3...
+    // Position-based: row 0 = Fresh, rows 1+ = Follow-up 1, 2, 3...
     const isFresh=i===0;
     const isF=i>0;
     const revNum=i;  // revision number (1-based for display)
@@ -1685,7 +1685,7 @@ function openJourney(idx){
     else if(isLostRow)stepCls='step-lost';
     else if(isPending)stepCls='step-pending';
 
-    const typeLabel=isFresh?'Fresh Meeting':`Revision ${revNum}`;
+    const typeLabel=isFresh?'Fresh Meeting':`Follow-up ${revNum}`;
     const delay=prevDate&&r.ms?daysBetween(prevDate,r.ms):null;
     prevDate=r.me||r.ms||prevDate;
 
@@ -2877,7 +2877,7 @@ function renderCalendar(){
 
     let badges=dayRows.slice(0,maxShow).map(r=>{
       const cls=calMeetClass(r);
-      const lbl=r.proj?r.proj.slice(0,22):isFuByPosition(r)?'Revision':'Fresh';
+      const lbl=r.proj?r.proj.slice(0,22):isFuByPosition(r)?'Follow-up':'Fresh';
       // Strikethrough if completed
       const style=r.me?'text-decoration:line-through;opacity:.75;':'';
       return `<span class="cal-badge ${cls}" style="${style}">${lbl}</span>`;
