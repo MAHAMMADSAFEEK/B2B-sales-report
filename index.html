@@ -441,13 +441,20 @@
     <div class="row r-wide"><div class="card">
       <h3>Project-wise data</h3>
       <div class="hint">One row per project · click a project name to view its journey · click ▶ to expand meetings · <b id="proj_count"></b></div>
-      <!-- LOCAL project name filter (only affects this table, not the dashboard filters) -->
+      <!-- LOCAL filters: project name + lead ID (only affect this table) -->
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
-        <div style="position:relative;flex:1;min-width:220px;max-width:340px;">
+        <div style="position:relative;flex:1;min-width:200px;max-width:300px;">
           <input id="proj_search" type="text" placeholder="🔍  Filter by project name…"
             style="width:100%;padding:8px 32px 8px 12px;border:1px solid var(--line);border-radius:9px;font-size:13px;color:var(--ink);background:var(--b50);outline:none;"
             oninput="filterProjTable()" onfocus="this.style.borderColor='var(--b500)'" onblur="this.style.borderColor='var(--line)'">
           <span id="proj_search_x" onclick="clearProjSearch()" title="Clear"
+            style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--muted);font-size:16px;line-height:1;">×</span>
+        </div>
+        <div style="position:relative;flex:1;min-width:180px;max-width:260px;">
+          <input id="lead_search" type="text" placeholder="🔍  Filter by lead ID…"
+            style="width:100%;padding:8px 32px 8px 12px;border:1px solid var(--line);border-radius:9px;font-size:13px;color:var(--ink);background:var(--b50);outline:none;"
+            oninput="filterProjTable()" onfocus="this.style.borderColor='var(--b500)'" onblur="this.style.borderColor='var(--line)'">
+          <span id="lead_search_x" onclick="clearLeadSearch()" title="Clear"
             style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--muted);font-size:16px;line-height:1;">×</span>
         </div>
         <span id="proj_search_hint" style="font-size:12px;color:var(--muted);"></span>
@@ -923,9 +930,52 @@ function buildIndex(){
 }
 
 // build multiselect controls
+// ── Global free-text filters (project name + lead ID) ──────────
+// These sit outside the FKEYS dropdown system — they're text inputs
+// that filter directly in applyFilters().
+let G_PROJ='';   // global project name search (lower)
+let G_LEAD='';   // global lead ID search (lower)
+
+function setGProj(v){G_PROJ=(v||'').trim().toLowerCase();render();}
+function setGLead(v){G_LEAD=(v||'').trim().toLowerCase();render();}
+
 function buildFilters(){
   const bar=document.getElementById('filters');
   bar.innerHTML='';
+
+  // ── Project Name text search (global) ──────────────────────
+  const projWrap=document.createElement('div');
+  projWrap.style.cssText='display:flex;flex-direction:column;gap:3px;';
+  projWrap.innerHTML=`<div class="ms" style="position:relative;min-width:180px;">
+    <label>Project Name</label>
+    <div style="position:relative;">
+      <input id="g-proj-search" type="text" placeholder="Search project…"
+        style="font-size:12px;padding:5px 26px 5px 8px;border:1px solid var(--line);border-radius:7px;background:var(--b50);color:var(--ink);outline:none;width:100%;min-width:160px;"
+        value="${G_PROJ.replace(/"/g,'&quot;')}"
+        oninput="setGProj(this.value)" onfocus="this.style.borderColor='var(--b500)'" onblur="this.style.borderColor='var(--line)'">
+      <span id="g-proj-x" onclick="document.getElementById('g-proj-search').value='';setGProj('');"
+        style="display:${G_PROJ?'flex':'none'};position:absolute;right:6px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--muted);font-size:14px;line-height:1;align-items:center;">×</span>
+    </div>
+  </div>`;
+  bar.appendChild(projWrap);
+
+  // ── Lead ID text search (global) ───────────────────────────
+  const leadWrap=document.createElement('div');
+  leadWrap.style.cssText='display:flex;flex-direction:column;gap:3px;';
+  leadWrap.innerHTML=`<div class="ms" style="position:relative;min-width:160px;">
+    <label>Lead ID</label>
+    <div style="position:relative;">
+      <input id="g-lead-search" type="text" placeholder="Search lead ID…"
+        style="font-size:12px;padding:5px 26px 5px 8px;border:1px solid var(--line);border-radius:7px;background:var(--b50);color:var(--ink);outline:none;width:100%;min-width:140px;"
+        value="${G_LEAD.replace(/"/g,'&quot;')}"
+        oninput="setGLead(this.value)" onfocus="this.style.borderColor='var(--b500)'" onblur="this.style.borderColor='var(--line)'">
+      <span id="g-lead-x" onclick="document.getElementById('g-lead-search').value='';setGLead('');"
+        style="display:${G_LEAD?'flex':'none'};position:absolute;right:6px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--muted);font-size:14px;line-height:1;align-items:center;">×</span>
+    </div>
+  </div>`;
+  bar.appendChild(leadWrap);
+
+  // ── Standard dropdown filters ──────────────────────────────
   FKEYS.filter(k=>!FMETA[k].noUI).forEach(k=>{
     const ms=document.createElement('div');ms.className='ms';ms.dataset.k=k;
     ms.innerHTML=`<label>${FMETA[k].label}</label>
@@ -956,7 +1006,12 @@ function buildFilters(){
     ms.querySelector('.ms-clear').onclick=e=>{e.stopPropagation();F[k].clear();render();};
     ms.querySelector('.ms-close').onclick=e=>{e.stopPropagation();panel.classList.remove('open');};
   });
-  const cb=document.createElement('button');cb.className='clearbtn';cb.textContent='Clear all';cb.onclick=clearFilters;bar.appendChild(cb);
+  const cb=document.createElement('button');cb.className='clearbtn';cb.textContent='Clear all';
+  cb.onclick=()=>{FKEYS.forEach(k=>F[k].clear());G_PROJ='';G_LEAD='';
+    const gp=document.getElementById('g-proj-search');if(gp)gp.value='';
+    const gl=document.getElementById('g-lead-search');if(gl)gl.value='';
+    render();};
+  bar.appendChild(cb);
 }
 document.addEventListener('click',()=>document.querySelectorAll('.ms-panel.open').forEach(p=>p.classList.remove('open')));
 function closePanels(){document.querySelectorAll('.ms-panel.open').forEach(p=>p.classList.remove('open'));}
@@ -972,24 +1027,49 @@ function syncFilterUI(){
   });
 }
 function tog(k,v){if(v==null||v==='')return;if(F[k].has(v))F[k].delete(v);else F[k].add(v);render();}
-function clearFilters(){FKEYS.forEach(k=>F[k].clear());render();}
+function clearFilters(){FKEYS.forEach(k=>F[k].clear());G_PROJ='';G_LEAD='';
+  const gp=document.getElementById('g-proj-search');if(gp)gp.value='';
+  const gl=document.getElementById('g-lead-search');if(gl)gl.value='';
+  render();}
 
 function applyFilters(){
   const active=FKEYS.filter(k=>F[k].size);
-  if(!active.length)return BASE.slice();
-  const keep=new Set();
-  LEADIDS.forEach(id=>{const rs=LEADMAP[id];if(active.every(k=>FMETA[k].lead?F[k].has(finalStat(rs)):rs.some(r=>F[k].has(fld(r,k)))))keep.add(id);});
+  // Start with all BASE leads matching dropdown filters
+  let keep=null;
+  if(active.length){
+    keep=new Set();
+    LEADIDS.forEach(id=>{const rs=LEADMAP[id];if(active.every(k=>FMETA[k].lead?F[k].has(finalStat(rs)):rs.some(r=>F[k].has(fld(r,k)))))keep.add(id);});
+  }
+  // Apply global project name text filter
+  if(G_PROJ){
+    if(!keep)keep=new Set(LEADIDS);
+    for(const id of [...keep]){
+      const rs=LEADMAP[id];
+      const projName=(rs[0]&&rs[0].proj||'').toLowerCase();
+      if(!projName.includes(G_PROJ))keep.delete(id);
+    }
+  }
+  // Apply global lead ID text filter
+  if(G_LEAD){
+    if(!keep)keep=new Set(LEADIDS);
+    for(const id of [...keep]){
+      if(!id.toLowerCase().includes(G_LEAD))keep.delete(id);
+    }
+  }
+  if(!keep)return BASE.slice();
   return BASE.filter(r=>keep.has(r.lead));
 }
 function renderChip(){
   const box=document.getElementById('drillchip');const chips=[];
-  FKEYS.forEach(k=>F[k].forEach(v=>chips.push({k,v,t:FMETA[k].label+': '+dval(k,v)})));
+  FKEYS.forEach(k=>F[k].forEach(v=>chips.push({k,v,t:FMETA[k].label+': '+dval(k,v),clear:()=>{F[k].delete(v);render();}})));
+  if(G_PROJ)chips.push({t:'Project: '+G_PROJ,clear:()=>{G_PROJ='';const el=document.getElementById('g-proj-search');if(el)el.value='';render();}});
+  if(G_LEAD)chips.push({t:'Lead ID: '+G_LEAD,clear:()=>{G_LEAD='';const el=document.getElementById('g-lead-search');if(el)el.value='';render();}});
   if(!chips.length){box.style.display='none';box.innerHTML='';return;}
   box.style.display='flex';
   box.innerHTML='<span class="chiplead">Filtering by:</span>'+chips.map((c,i)=>`<span class="chip" data-i="${i}">${c.t} ✕</span>`).join('')+'<span class="chip clearall">Clear all ✕</span>';
   box.querySelectorAll('.chip').forEach((ch,i)=>ch.onclick=()=>{
     if(ch.classList.contains('clearall'))return clearFilters();
-    const c=chips[i];F[c.k].delete(c.v);render();
+    chips[i]&&chips[i].clear&&chips[i].clear();
   });
 }
 
@@ -1358,21 +1438,26 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeJ
 
 // ── Project-wise table: local name search (does not affect dashboard filters) ──
 function filterProjTable(){
-  const q=(document.getElementById('proj_search')||{}).value||'';
+  const qp=(document.getElementById('proj_search')||{}).value||'';
+  const ql2=(document.getElementById('lead_search')||{}).value||'';
   const hint=document.getElementById('proj_search_hint');
-  const x=document.getElementById('proj_search_x');
-  if(x)x.style.display=q?'block':'none';
+  const xp=document.getElementById('proj_search_x');if(xp)xp.style.display=qp?'block':'none';
+  const xl=document.getElementById('lead_search_x');if(xl)xl.style.display=ql2?'block':'none';
+  const qpl=qp.toLowerCase(),qll=ql2.toLowerCase();
   const rows=document.querySelectorAll('#proj_tbl tbody tr.proj-row');
-  if(!q){rows.forEach(r=>r.style.display='');if(hint)hint.textContent='';return;}
-  const ql=q.toLowerCase();let shown=0;
+  if(!qpl&&!qll){rows.forEach(r=>r.style.display='');if(hint)hint.textContent='';return;}
+  let shown=0;
   rows.forEach(r=>{
-    // also remove any open task sub-rows when filtering
     const i=r.dataset.i;
     document.querySelectorAll(`#proj_tbl .task-row[data-pi="${i}"]`).forEach(x=>x.remove());
     r.removeAttribute('data-open');
     const car=r.querySelector('.caret');if(car)car.classList.remove('open');
     const projName=(r.querySelector('.proj-name-link')||{}).textContent||'';
-    const match=projName.toLowerCase().includes(ql);
+    const proj=window.PROJ&&window.PROJ[i];
+    const leadId=(proj&&proj.id||'').toLowerCase();
+    const matchProj=!qpl||projName.toLowerCase().includes(qpl);
+    const matchLead=!qll||leadId.includes(qll);
+    const match=matchProj&&matchLead;
     r.style.display=match?'':'none';
     if(match)shown++;
   });
@@ -1380,6 +1465,10 @@ function filterProjTable(){
 }
 function clearProjSearch(){
   const el=document.getElementById('proj_search');if(el){el.value='';el.focus();}
+  filterProjTable();
+}
+function clearLeadSearch(){
+  const el=document.getElementById('lead_search');if(el){el.value='';el.focus();}
   filterProjTable();
 }
 
