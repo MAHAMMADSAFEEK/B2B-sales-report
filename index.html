@@ -1019,7 +1019,6 @@ function render(){
   const leads=byLead(rows);
   const ids=Object.keys(leads);
   const projRecs=ids.map(id=>({id,rows:leads[id],r:rep(leads[id])}));
-  window.PROJ=projRecs;
 
   // KPIs
   const nLeads=ids.length,nMeet=rows.length;
@@ -1107,7 +1106,8 @@ function render(){
   document.getElementById('proj_count').textContent=projRecs.length+' unique projects · '+totMeet+' meetings';
   const pt=document.querySelector('#proj_tbl tbody');
   const sorted=projRecs.slice().sort((a,b)=>(b.r.size||0)-(a.r.size||0));
-  window.PROJ_ALL=sorted; // save full sorted list for search filter
+  window.PROJ=sorted;        // MUST be set AFTER sort — data-i indices map to sorted
+  window.PROJ_ALL=sorted;    // for search filter
   pt.innerHTML=sorted.length?sorted.map((p,i)=>{
     const r=p.r,calls=p.rows.reduce((s,x)=>s+(x.callLog?x.callLog.length:0),0);
     const ph=(p.rows.map(x=>x.hoto).filter(Boolean).sort()[0])||'';
