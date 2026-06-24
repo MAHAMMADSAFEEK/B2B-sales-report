@@ -403,6 +403,7 @@
     <button class="tab" data-tab="notint" style="background:linear-gradient(90deg,#8b1a1a,#d6493b);color:#fff;">❌ Not Interested</button>
     <button class="tab" data-tab="calendar" style="background:linear-gradient(90deg,#1554b8,#2f7bf4);color:#fff;">📅 Sales Calendar</button>
     <button class="tab" data-tab="funnelrpt" style="background:linear-gradient(90deg,#5b2d8e,#9b6dff);color:#fff;">🔻 Funnel Report</button>
+    <button class="tab" data-tab="downloads" style="background:linear-gradient(90deg,#0a4a2a,#1f9d6b);color:#fff;">⬇ Downloads</button>
   </div>
 
   <!-- OVERVIEW TAB -->
@@ -840,8 +841,113 @@
     </div>
   </div>
 
+  <!-- DOWNLOADS TAB -->
+  <div id="tab-downloads" style="display:none;">
+    <!-- Header banner -->
+    <div style="background:linear-gradient(115deg,#0a2a16,#1f9d6b);border-radius:14px;padding:22px 28px;margin-bottom:20px;color:#fff;display:flex;flex-wrap:wrap;gap:16px;align-items:center;">
+      <div>
+        <div style="font-size:22px;font-weight:800;">⬇ Data Downloads</div>
+        <div style="font-size:12px;color:#9fdfbf;margin-top:4px;">Export project data from the current view — all active filters apply</div>
+      </div>
+      <div id="dl-filter-note" style="margin-left:auto;background:rgba(255,255,255,.12);border-radius:10px;padding:10px 16px;font-size:12px;color:#cff7e4;line-height:1.6;"></div>
+    </div>
+
+    <!-- Download cards grid -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-bottom:20px;">
+
+      <!-- 1. All Projects CSV -->
+      <div class="card" style="border-top:4px solid #1f9d6b;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+          <div style="width:44px;height:44px;background:#e7f6ee;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">📋</div>
+          <div><div style="font-weight:700;font-size:15px;">All Projects</div><div style="font-size:12px;color:var(--muted);">One row per unique project</div></div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6;">
+          Columns: Lead ID · Project · BDM · Manager · City · Size KW · Final Status · HOTO Date · Meeting Start · Meeting End · Won Date · Category · Label · Last Updated · Aging · Today's Call Status
+        </div>
+        <div id="dl-projects-count" style="font-size:11px;font-weight:600;color:#1f9d6b;margin-bottom:12px;"></div>
+        <button onclick="downloadCSV('projects')" style="width:100%;padding:10px;background:linear-gradient(90deg,#1f9d6b,#34c98a);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">⬇ Download Projects CSV</button>
+      </div>
+
+      <!-- 2. All Meetings CSV -->
+      <div class="card" style="border-top:4px solid #2f7bf4;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+          <div style="width:44px;height:44px;background:#eaf1fd;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">📅</div>
+          <div><div style="font-weight:700;font-size:15px;">All Meetings</div><div style="font-size:12px;color:var(--muted);">Every meeting row (Fresh + Follow-ups)</div></div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6;">
+          Columns: Lead ID · Project · Meeting Type · BDM · City · Size KW · Meeting Status · Scheduled Date · Completed Date · Category · Label · Next Follow-up · Call Log (latest) · Last Updated
+        </div>
+        <div id="dl-meetings-count" style="font-size:11px;font-weight:600;color:#2f7bf4;margin-bottom:12px;"></div>
+        <button onclick="downloadCSV('meetings')" style="width:100%;padding:10px;background:linear-gradient(90deg,#1554b8,#2f7bf4);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">⬇ Download Meetings CSV</button>
+      </div>
+
+      <!-- 3. Sale Won CSV -->
+      <div class="card" style="border-top:4px solid #1f9d6b;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+          <div style="width:44px;height:44px;background:#e7f6ee;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">🏆</div>
+          <div><div style="font-weight:700;font-size:15px;">Sale Won</div><div style="font-size:12px;color:var(--muted);">Only closed/won projects</div></div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6;">
+          Columns: Lead ID · Project · BDM · City · Size KW · Won Date · HOTO Date · Days to Win · HOTO Lag · Total Meetings · Category · Payment · Stage/Reason
+        </div>
+        <div id="dl-won-count" style="font-size:11px;font-weight:600;color:#1f9d6b;margin-bottom:12px;"></div>
+        <button onclick="downloadCSV('won')" style="width:100%;padding:10px;background:linear-gradient(90deg,#0a4a2a,#1f9d6b);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">⬇ Download Sale Won CSV</button>
+      </div>
+
+      <!-- 4. Not Interested CSV -->
+      <div class="card" style="border-top:4px solid #d6493b;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+          <div style="width:44px;height:44px;background:#fdecea;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">❌</div>
+          <div><div style="font-weight:700;font-size:15px;">Not Interested</div><div style="font-size:12px;color:var(--muted);">Lost leads</div></div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6;">
+          Columns: Lead ID · Project · BDM · City · Size KW · Last Status · Loss Reason · Total Meetings · Category · Label · Last Updated
+        </div>
+        <div id="dl-ni-count" style="font-size:11px;font-weight:600;color:#d6493b;margin-bottom:12px;"></div>
+        <button onclick="downloadCSV('ni')" style="width:100%;padding:10px;background:linear-gradient(90deg,#8b1a1a,#d6493b);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">⬇ Download Not Interested CSV</button>
+      </div>
+
+      <!-- 5. Open Pipeline CSV -->
+      <div class="card" style="border-top:4px solid #f5a623;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+          <div style="width:44px;height:44px;background:#fdf3df;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">🔄</div>
+          <div><div style="font-weight:700;font-size:15px;">Open Pipeline</div><div style="font-size:12px;color:var(--muted);">Active / follow-up leads</div></div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6;">
+          Columns: Lead ID · Project · BDM · City · Size KW · Status · Meetings Count · Next Follow-up · Aging Bucket · Days Since Update · Today's Call Status · Latest Call Note
+        </div>
+        <div id="dl-open-count" style="font-size:11px;font-weight:600;color:#f5a623;margin-bottom:12px;"></div>
+        <button onclick="downloadCSV('open')" style="width:100%;padding:10px;background:linear-gradient(90deg,#9a6a06,#f5a623);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">⬇ Download Open Pipeline CSV</button>
+      </div>
+
+      <!-- 6. BDM Summary CSV -->
+      <div class="card" style="border-top:4px solid #9b6dff;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+          <div style="width:44px;height:44px;background:#f0ebff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">👤</div>
+          <div><div style="font-weight:700;font-size:15px;">BDM Summary</div><div style="font-size:12px;color:var(--muted);">One row per BDM with totals</div></div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6;">
+          Columns: BDM · Total Leads · Total Meetings · Fresh Meetings · Follow-ups · Completed · Sale Won · HOTO Done · Win Rate % · Total KW Won · Open Pipeline
+        </div>
+        <div id="dl-bdm-count" style="font-size:11px;font-weight:600;color:#9b6dff;margin-bottom:12px;"></div>
+        <button onclick="downloadCSV('bdm')" style="width:100%;padding:10px;background:linear-gradient(90deg,#5b2d8e,#9b6dff);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">⬇ Download BDM Summary CSV</button>
+      </div>
+
+    </div>
+
+    <!-- Preview table -->
+    <div class="card" id="dl-preview-card" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+        <h3 style="margin:0;" id="dl-preview-title">Preview</h3>
+        <button onclick="document.getElementById('dl-preview-card').style.display='none'" style="padding:6px 14px;border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--muted);font-size:12px;cursor:pointer;">× Close preview</button>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">Showing first 10 rows</div>
+      <div class="ptable-wrap" style="max-height:320px;overflow:auto;" id="dl-preview-wrap"></div>
+    </div>
+  </div>
+
   <footer style="margin-top:26px;font-size:11px;color:var(--muted);text-align:center">
-    Source: "BDM Dashboard backend" · 4,034 meetings / 3,410 leads · Last-updated = max(meeting end, last-updated date) · capacity excludes &gt;5,000 KW outliers.
+    Source: "BDM Dashboard backend" · Meetings / leads · Last-updated = max(meeting end, last-updated date) · capacity excludes &gt;5,000 KW outliers.
   </footer>
 </div>
 
@@ -1878,11 +1984,13 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
   document.getElementById('tab-notint').style.display=tab==='notint'?'':'none';
   document.getElementById('tab-calendar').style.display=tab==='calendar'?'':'none';
   document.getElementById('tab-funnelrpt').style.display=tab==='funnelrpt'?'':'none';
+  document.getElementById('tab-downloads').style.display=tab==='downloads'?'':'none';
   if(tab==='overview')Object.values(charts).forEach(c=>c&&c.resize());
   if(tab==='salewon')renderSaleWon();
   if(tab==='notint')renderNotInt();
   if(tab==='calendar')renderCalendar();
   if(tab==='funnelrpt')renderFunnelRpt();
+  if(tab==='downloads')renderDownloads();
 });
 
 // ===== ACCESS CONTROL — LIVE fetch from User_Setting sheet on every login =====
@@ -3271,6 +3379,140 @@ function openFRPopup(dim,sub,leadIds){
 }
 function closeFRPopup(){document.getElementById('fr-popup').style.display='none';}
 function clearFRFilters(){const m=document.getElementById('fr-f-month');if(m)m.selectedIndex=0;renderFunnelRpt();}
+
+// ═══════════════════════════════════════════════════════════════
+//  DOWNLOADS TAB
+// ═══════════════════════════════════════════════════════════════
+function renderDownloads(){
+  const rows=applyFilters();
+  const leads=byLead(rows);
+  const leadIds=Object.keys(leads);
+  const projRecs=leadIds.map(id=>({id,rows:leads[id],r:rep(leads[id])}));
+
+  // Counts for each export type
+  const wonCount=projRecs.filter(p=>isWon(p.r.pstat)).length;
+  const niCount=projRecs.filter(p=>/not interested/i.test(p.r.pstat)).length;
+  const openCount=projRecs.filter(p=>!isWon(p.r.pstat)&&!/not interested/i.test(p.r.pstat)).length;
+  const bdmCount=new Set(rows.map(r=>r.bdm).filter(Boolean)).size;
+  const setCount=(id,text)=>{const el=document.getElementById(id);if(el)el.textContent=text;};
+  setCount('dl-projects-count',`${leadIds.length} projects · ${rows.length} meeting rows`);
+  setCount('dl-meetings-count',`${rows.length} meeting rows across ${leadIds.length} projects`);
+  setCount('dl-won-count',`${wonCount} projects won`);
+  setCount('dl-ni-count',`${niCount} lost leads`);
+  setCount('dl-open-count',`${openCount} active leads`);
+  setCount('dl-bdm-count',`${bdmCount} BDMs`);
+
+  // Filter note
+  const activeF=FKEYS.filter(k=>F[k].size).length+(G_PROJS.size?1:0)+(G_LEADS.size?1:0);
+  const note=document.getElementById('dl-filter-note');
+  if(note)note.innerHTML=activeF
+    ?`<b style="color:#ffd966;">⚠ ${activeF} filter${activeF>1?'s are':' is'} active</b><br>Downloads will reflect the current filtered view.`
+    :`<b>No filters active</b><br>Downloads will include all ${leadIds.length} projects.`;
+}
+
+// CSV escape
+function csvCell(v){
+  const s=String(v==null?'':v).replace(/\r\n/g,' ').replace(/\n/g,' ');
+  return s.includes(',')||s.includes('"')||s.includes('\n')?'"'+s.replace(/"/g,'""')+'"':s;
+}
+function csvRow(arr){return arr.map(csvCell).join(',');}
+function triggerDownload(filename,csvContent){
+  const blob=new Blob(['\uFEFF'+csvContent],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function fmtDL(iso){return iso?new Date(iso+' 00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):''}
+
+function downloadCSV(type){
+  const rows=applyFilters();
+  const leads=byLead(rows);
+  const leadIds=Object.keys(leads);
+  const projRecs=leadIds.map(id=>({id,rows:leads[id],r:rep(leads[id])})).sort((a,b)=>(b.r.size||0)-(a.r.size||0));
+  const today=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}).replace(/ /g,'-');
+  let headers,dataRows,filename;
+
+  if(type==='projects'){
+    filename=`BDM_Projects_${today}.csv`;
+    headers=['Lead ID','Project','BDM','Manager','City','Size KW','Final Status','HOTO Date','Meeting Start','Meeting End','Won Date','Category','Label','Last Updated','Aging','Today Call Status'];
+    dataRows=projRecs.map(p=>{const r=p.r;const hoto=p.rows.map(x=>x.hoto).filter(Boolean).sort()[0]||'';return[p.id,r.proj,r.bdm,r.mgr,r.city,r.size||'',r.pstat,fmtDL(hoto),fmtDL(r.ms),fmtDL(r.me),fmtDL(r.wonM?r.me:''),r.cat,r.label,r.effD,r.age,r.today];});
+  } else if(type==='meetings'){
+    filename=`BDM_Meetings_${today}.csv`;
+    headers=['Lead ID','Project','Meeting Type','BDM','Manager','City','Size KW','Meeting Status','Scheduled Date','Completed Date','Category','Label','Next Follow-up','Latest Call Note','Last Updated'];
+    dataRows=[];
+    projRecs.forEach(p=>{
+      const sorted=p.rows.slice().sort((a,b)=>(a.ms||'').localeCompare(b.ms||''));
+      sorted.forEach((r,idx)=>{
+        const mtype=idx===0?'Fresh Meeting':`Follow-up ${idx}`;
+        dataRows.push([p.id,r.proj,mtype,r.bdm,r.mgr,r.city,r.size||'',r.fstat,fmtDL(r.ms),fmtDL(r.me),r.cat,r.label,fmtDL(r.nfu),r.callLatest,r.effD]);
+      });
+    });
+  } else if(type==='won'){
+    filename=`BDM_SaleWon_${today}.csv`;
+    headers=['Lead ID','Project','BDM','Manager','City','Size KW','Won Date','HOTO Date','Days to Win','HOTO Lag (days)','Total Meetings','Category','Label','Payment','Stage'];
+    const wonProjs=projRecs.filter(p=>isWon(p.r.pstat));
+    dataRows=wonProjs.map(p=>{
+      const r=p.r;
+      const hoto=p.rows.map(x=>x.hoto).filter(Boolean).sort()[0]||'';
+      const wonDate=r.me||r.ms||'';
+      const firstMs=p.rows.slice().sort((a,b)=>(a.ms||'').localeCompare(b.ms||''))[0].ms||'';
+      const d2w=(wonDate&&firstMs)?Math.round((new Date(wonDate+' 00:00')-new Date(firstMs+' 00:00'))/86400000):'';
+      const d2h=(hoto&&wonDate)?Math.round((new Date(hoto+' 00:00')-new Date(wonDate+' 00:00'))/86400000):'';
+      return[p.id,r.proj,r.bdm,r.mgr,r.city,r.size||'',fmtDL(wonDate),fmtDL(hoto),d2w,d2h,p.rows.length,r.cat,r.label,r.payment||'',r.currStage||''];
+    });
+  } else if(type==='ni'){
+    filename=`BDM_NotInterested_${today}.csv`;
+    headers=['Lead ID','Project','BDM','Manager','City','Size KW','Last Status','Loss Reason','Total Meetings','Category','Label','Last Updated'];
+    const niProjs=projRecs.filter(p=>/not interested/i.test(p.r.pstat));
+    dataRows=niProjs.map(p=>{const r=p.r;return[p.id,r.proj,r.bdm,r.mgr,r.city,r.size||'',r.pstat,r.saleReason||r.currStage||'',p.rows.length,r.cat,r.label,r.effD];});
+  } else if(type==='open'){
+    filename=`BDM_OpenPipeline_${today}.csv`;
+    headers=['Lead ID','Project','BDM','Manager','City','Size KW','Status','Total Meetings','Follow-ups','Next Follow-up','Aging Bucket','Days Since Update','Today Call Status','Latest Call Note'];
+    const openProjs=projRecs.filter(p=>!isWon(p.r.pstat)&&!/not interested/i.test(p.r.pstat));
+    dataRows=openProjs.map(p=>{
+      const r=p.r;
+      const fuCount=p.rows.length-1;
+      return[p.id,r.proj,r.bdm,r.mgr,r.city,r.size||'',r.pstat,p.rows.length,fuCount,fmtDL(r.nfu),r.age,r.ageN>=0?r.ageN:'',r.today,r.callLatest];
+    });
+  } else if(type==='bdm'){
+    filename=`BDM_Summary_${today}.csv`;
+    headers=['BDM','Manager','Total Leads','Total Meetings','Fresh Meetings','Follow-ups','Completed','Sale Won','HOTO Done','Win Rate %','Total KW Won','Open Pipeline'];
+    const bdmMap={};
+    projRecs.forEach(p=>{
+      const b=p.r.bdm||'Unknown';const m=p.r.mgr||'';
+      if(!bdmMap[b])bdmMap[b]={mgr:m,leads:0,meetings:0,fresh:0,fu:0,completed:0,won:0,hoto:0,wonKW:0,open:0};
+      const G=bdmMap[b];
+      G.leads++;G.meetings+=p.rows.length;G.fresh+=1;G.fu+=p.rows.length-1;
+      if(/completed/i.test(p.r.pstat))G.completed++;
+      if(isWon(p.r.pstat)){G.won++;G.wonKW+=(p.r.size||0);if(p.rows.some(x=>x.hoto))G.hoto++;}
+      else if(!/not interested/i.test(p.r.pstat))G.open++;
+    });
+    dataRows=Object.entries(bdmMap).sort((a,b)=>b[1].leads-a[1].leads).map(([bdm,G])=>{
+      const wr=G.leads?Math.round(G.won/G.leads*100):0;
+      return[bdm,G.mgr,G.leads,G.meetings,G.fresh,G.fu,G.completed,G.won,G.hoto,wr+'%',Math.round(G.wonKW),G.open];
+    });
+  }
+
+  // Build CSV
+  const csv=[csvRow(headers),...dataRows.map(r=>csvRow(r))].join('\n');
+  triggerDownload(filename,csv);
+
+  // Show preview (first 10 rows)
+  const previewCard=document.getElementById('dl-preview-card');
+  const previewTitle=document.getElementById('dl-preview-title');
+  const previewWrap=document.getElementById('dl-preview-wrap');
+  if(previewCard&&previewTitle&&previewWrap){
+    previewTitle.textContent=`Preview — ${filename} (${dataRows.length} rows)`;
+    const preview=[headers,...dataRows.slice(0,10)];
+    previewWrap.innerHTML=`<table style="font-size:11px;border-collapse:collapse;white-space:nowrap;">
+      <thead><tr>${headers.map(h=>`<th style="padding:6px 8px;background:var(--b900);color:#fff;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.4px;">${h}</th>`).join('')}</tr></thead>
+      <tbody>${dataRows.slice(0,10).map((r,i)=>`<tr style="${i%2?'background:var(--b50)':''}">${r.map(c=>`<td style="padding:5px 8px;border-bottom:1px solid var(--line);max-width:160px;overflow:hidden;text-overflow:ellipsis;">${String(c==null?'':c).replace(/</g,'&lt;')}</td>`).join('')}</tr>`).join('')}</tbody>
+    </table>${dataRows.length>10?`<div style="padding:8px 12px;font-size:11px;color:var(--muted);">Showing 10 of ${dataRows.length} rows in the downloaded file</div>`:''}`;
+    previewCard.style.display='block';
+    previewCard.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+}
 
 // Dashboard initialises only after a successful login
 let STARTED=false;
