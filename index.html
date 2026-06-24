@@ -441,23 +441,33 @@
     <div class="row r-wide"><div class="card">
       <h3>Project-wise data</h3>
       <div class="hint">One row per project · click a project name to view its journey · click ▶ to expand meetings · <b id="proj_count"></b></div>
-      <!-- LOCAL filters: project name + lead ID (only affect this table) -->
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
-        <div style="position:relative;flex:1;min-width:200px;max-width:300px;">
-          <input id="proj_search" type="text" placeholder="🔍  Filter by project name…"
-            style="width:100%;padding:8px 32px 8px 12px;border:1px solid var(--line);border-radius:9px;font-size:13px;color:var(--ink);background:var(--b50);outline:none;"
-            oninput="filterProjTable()" onfocus="this.style.borderColor='var(--b500)'" onblur="this.style.borderColor='var(--line)'">
-          <span id="proj_search_x" onclick="clearProjSearch()" title="Clear"
-            style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--muted);font-size:16px;line-height:1;">×</span>
+      <!-- LOCAL filters: project name + lead ID multi-select (only affect this table) -->
+      <div style="display:flex;align-items:flex-end;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);">Project Name</label>
+          <div class="ms" data-lms="tbl-proj" style="position:relative;">
+            <button class="ms-btn" id="tbl-proj-btn" type="button" style="min-width:160px;">All</button>
+            <div class="ms-panel" id="tbl-proj-panel" style="min-width:280px;">
+              <input class="ms-search" id="tbl-proj-q" placeholder="Type to search project…" autocomplete="off">
+              <div class="ms-actions" style="display:flex;gap:8px;padding:6px 10px;border-bottom:1px solid var(--line);"><a style="font-size:11px;color:var(--b600);cursor:pointer;" onclick="clearTblFilter('proj')">Clear</a></div>
+              <div class="ms-opts" id="tbl-proj-opts" style="max-height:220px;overflow-y:auto;"></div>
+              <div class="ms-foot"><a class="ms-close">Done</a></div>
+            </div>
+          </div>
         </div>
-        <div style="position:relative;flex:1;min-width:180px;max-width:260px;">
-          <input id="lead_search" type="text" placeholder="🔍  Filter by lead ID…"
-            style="width:100%;padding:8px 32px 8px 12px;border:1px solid var(--line);border-radius:9px;font-size:13px;color:var(--ink);background:var(--b50);outline:none;"
-            oninput="filterProjTable()" onfocus="this.style.borderColor='var(--b500)'" onblur="this.style.borderColor='var(--line)'">
-          <span id="lead_search_x" onclick="clearLeadSearch()" title="Clear"
-            style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--muted);font-size:16px;line-height:1;">×</span>
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);">Lead ID</label>
+          <div class="ms" data-lms="tbl-lead" style="position:relative;">
+            <button class="ms-btn" id="tbl-lead-btn" type="button" style="min-width:160px;">All</button>
+            <div class="ms-panel" id="tbl-lead-panel" style="min-width:280px;">
+              <input class="ms-search" id="tbl-lead-q" placeholder="Type to search lead ID…" autocomplete="off">
+              <div class="ms-actions" style="display:flex;gap:8px;padding:6px 10px;border-bottom:1px solid var(--line);"><a style="font-size:11px;color:var(--b600);cursor:pointer;" onclick="clearTblFilter('lead')">Clear</a></div>
+              <div class="ms-opts" id="tbl-lead-opts" style="max-height:220px;overflow-y:auto;"></div>
+              <div class="ms-foot"><a class="ms-close">Done</a></div>
+            </div>
+          </div>
         </div>
-        <span id="proj_search_hint" style="font-size:12px;color:var(--muted);"></span>
+        <span id="proj_search_hint" style="font-size:12px;color:var(--muted);align-self:center;"></span>
       </div>
       <div class="ptable-wrap"><table id="proj_tbl"><thead><tr>
         <th></th><th>City</th><th>BDM</th><th>Project</th><th class="num">Size KW</th>
@@ -933,41 +943,110 @@ function buildIndex(){
 // ── Global free-text filters (project name + lead ID) ──────────
 // These sit outside the FKEYS dropdown system — they're text inputs
 // that filter directly in applyFilters().
-let G_PROJ='';   // global project name search (lower)
-let G_LEAD='';   // global lead ID search (lower)
+// Global multi-select sets for Project Name + Lead ID
+let G_PROJS=new Set();  // selected project names (exact)
+let G_LEADS=new Set();  // selected lead IDs (exact)
+let G_PROJ='';          // kept for chip compat
+let G_LEAD='';          // kept for chip compat
 
-function setGProj(v){G_PROJ=(v||'').trim().toLowerCase();render();}
-function setGLead(v){G_LEAD=(v||'').trim().toLowerCase();render();}
+// Build a live-search multi-select ms-panel for large option lists
+function buildLiveMS(bar,id,label,getOptions,selSet,onchange){
+  const ms=document.createElement('div');ms.className='ms';ms.dataset.lms=id;
+  ms.innerHTML=`<label>${label}</label>
+    <button class="ms-btn" type="button" id="${id}-btn">All</button>
+    <div class="ms-panel" id="${id}-panel" style="min-width:260px;">
+      <input class="ms-search" id="${id}-q" placeholder="Type to search…" autocomplete="off">
+      <div class="ms-actions" style="display:flex;gap:8px;padding:6px 10px;border-bottom:1px solid var(--line);">
+        <a style="font-size:11px;color:var(--b600);cursor:pointer;" onclick="clearLiveMS('${id}')">Clear</a>
+      </div>
+      <div class="ms-opts" id="${id}-opts" style="max-height:220px;overflow-y:auto;"></div>
+      <div class="ms-foot"><a class="ms-close">Done</a></div>
+    </div>`;
+  bar.appendChild(ms);
+
+  const btn=ms.querySelector('.ms-btn');
+  const panel=ms.querySelector('.ms-panel');
+  const qInput=ms.querySelector('.ms-search');
+
+  panel.addEventListener('click',e=>e.stopPropagation());
+
+  btn.onclick=e=>{
+    e.stopPropagation();
+    const wasOpen=panel.classList.contains('open');
+    document.querySelectorAll('.ms-panel.open').forEach(p=>p.classList.remove('open'));
+    if(wasOpen)return;
+    const r=btn.getBoundingClientRect();
+    let left=r.left;if(left+270>window.innerWidth-8)left=window.innerWidth-278;
+    panel.style.left=left+'px';panel.style.top=(r.bottom+4)+'px';
+    panel.style.maxHeight=(window.innerHeight-r.bottom-20)+'px';
+    panel.classList.add('open');
+    qInput.value='';renderLiveMSOpts(id,getOptions,selSet);
+    setTimeout(()=>qInput.focus(),0);
+  };
+
+  qInput.oninput=()=>renderLiveMSOpts(id,getOptions,selSet,onchange);
+  ms.querySelector('.ms-close').onclick=e=>{e.stopPropagation();panel.classList.remove('open');};
+  updateLiveMSBtn(id,btn,selSet,label);
+}
+
+function renderLiveMSOpts(id,getOptions,selSet,onchange){
+  const q=(document.getElementById(id+'-q')||{}).value||'';
+  const ql=q.trim().toLowerCase();
+  const opts=getOptions();
+  // show: selected first (always visible), then matches
+  const selected=[...selSet].filter(v=>opts.includes(v));
+  const unselected=ql?opts.filter(v=>!selSet.has(v)&&v.toLowerCase().includes(ql)):[];
+  const show=[...selected,...unselected].slice(0,80);
+  const box=document.getElementById(id+'-opts');
+  if(!box)return;
+  if(!show.length&&ql){box.innerHTML='<div style="padding:10px 12px;font-size:12px;color:var(--muted);">No matches for "'+ql.replace(/</g,'&lt;')+'"</div>';return;}
+  if(!show.length&&!ql){box.innerHTML='<div style="padding:10px 12px;font-size:12px;color:var(--muted);">Start typing to search…</div>';return;}
+  const hl=(t)=>{if(!ql)return t;const i=t.toLowerCase().indexOf(ql);return i<0?t:t.slice(0,i)+'<mark style="background:rgba(79,142,247,.25);border-radius:2px;">'+t.slice(i,i+ql.length)+'</mark>'+t.slice(i+ql.length);};
+  box.innerHTML=show.map(v=>{
+    const safe=v.replace(/"/g,'&quot;').replace(/'/g,"\'");
+    const chk=selSet.has(v)?'checked':'';
+    return `<label class="ms-opt" onclick="event.stopPropagation()"><input type="checkbox" ${chk} onchange="toggleLiveMS('${id}','${safe}')" /><span class="nm">${hl(v)}</span></label>`;
+  }).join('');
+  if(!ql&&opts.length>80){box.innerHTML+='<div style="padding:6px 12px;font-size:11px;color:var(--muted);">Type to search ${opts.length} options…</div>';}
+}
+
+function toggleLiveMS(id,val){
+  const selSet=id==='g-proj'?G_PROJS:G_LEADS;
+  if(selSet.has(val))selSet.delete(val);else selSet.add(val);
+  const btn=document.getElementById(id+'-btn');
+  const label=id==='g-proj'?'Project Name':'Lead ID';
+  updateLiveMSBtn(id,btn,selSet,label);
+  render();
+}
+
+function clearLiveMS(id){
+  const selSet=id==='g-proj'?G_PROJS:G_LEADS;
+  selSet.clear();
+  const btn=document.getElementById(id+'-btn');
+  const label=id==='g-proj'?'Project Name':'Lead ID';
+  updateLiveMSBtn(id,btn,selSet,label);
+  renderLiveMSOpts(id,id==='g-proj'?()=>getProjOpts():()=>getLeadOpts(),selSet);
+  render();
+}
+
+function updateLiveMSBtn(id,btn,selSet,label){
+  if(!btn)btn=document.getElementById(id+'-btn');
+  if(!btn)return;
+  if(!selSet.size){btn.textContent='All';btn.classList.remove('has');}
+  else if(selSet.size===1){btn.textContent=[...selSet][0].slice(0,22);btn.classList.add('has');}
+  else{btn.textContent=selSet.size+' selected';btn.classList.add('has');}
+}
+
+function getProjOpts(){return [...new Set(BASE.map(r=>r.proj).filter(Boolean))].sort();}
+function getLeadOpts(){return [...new Set(BASE.map(r=>r.lead).filter(Boolean))].sort();}
 
 function buildFilters(){
   const bar=document.getElementById('filters');
   bar.innerHTML='';
 
-  // ── Project Name inline text search (styled same as dropdowns) ──
-  const projMs=document.createElement('div');projMs.className='ms';
-  projMs.innerHTML=`<label>Project Name</label>
-    <div style="position:relative;">
-      <input id="g-proj-search" type="text" placeholder="Search project…"
-        class="ms-btn" style="text-align:left;cursor:text;padding-right:22px;font-size:12px;min-width:130px;"
-        value="${G_PROJ.replace(/"/g,'&quot;')}"
-        oninput="setGProj(this.value)" onclick="event.stopPropagation()">
-      <span id="g-proj-x" onclick="event.stopPropagation();document.getElementById('g-proj-search').value='';setGProj('');"
-        style="display:${G_PROJ?'block':'none'};position:absolute;right:7px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--muted);font-size:15px;line-height:1;">×</span>
-    </div>`;
-  bar.appendChild(projMs);
-
-  // ── Lead ID inline text search ──────────────────────────────
-  const leadMs=document.createElement('div');leadMs.className='ms';
-  leadMs.innerHTML=`<label>Lead ID</label>
-    <div style="position:relative;">
-      <input id="g-lead-search" type="text" placeholder="Search lead ID…"
-        class="ms-btn" style="text-align:left;cursor:text;padding-right:22px;font-size:12px;min-width:120px;"
-        value="${G_LEAD.replace(/"/g,'&quot;')}"
-        oninput="setGLead(this.value)" onclick="event.stopPropagation()">
-      <span id="g-lead-x" onclick="event.stopPropagation();document.getElementById('g-lead-search').value='';setGLead('');"
-        style="display:${G_LEAD?'block':'none'};position:absolute;right:7px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--muted);font-size:15px;line-height:1;">×</span>
-    </div>`;
-  bar.appendChild(leadMs);
+  // ── Project Name + Lead ID live-search multi-select ───────────
+  buildLiveMS(bar,'g-proj','Project Name',getProjOpts,G_PROJS);
+  buildLiveMS(bar,'g-lead','Lead ID',getLeadOpts,G_LEADS);
 
   // ── Dropdown filters ────────────────────────────────────────
   FKEYS.filter(k=>!FMETA[k].noUI).forEach(k=>{
@@ -1001,10 +1080,7 @@ function buildFilters(){
     ms.querySelector('.ms-close').onclick=e=>{e.stopPropagation();panel.classList.remove('open');};
   });
   const cb=document.createElement('button');cb.className='clearbtn';cb.textContent='Clear all';
-  cb.onclick=()=>{FKEYS.forEach(k=>F[k].clear());G_PROJ='';G_LEAD='';
-    const gp=document.getElementById('g-proj-search');if(gp)gp.value='';
-    const gl=document.getElementById('g-lead-search');if(gl)gl.value='';
-    render();};
+  cb.onclick=()=>clearFilters();
   bar.appendChild(cb);
 }
 document.addEventListener('click',()=>document.querySelectorAll('.ms-panel.open').forEach(p=>p.classList.remove('open')));
@@ -1021,10 +1097,13 @@ function syncFilterUI(){
   });
 }
 function tog(k,v){if(v==null||v==='')return;if(F[k].has(v))F[k].delete(v);else F[k].add(v);render();}
-function clearFilters(){FKEYS.forEach(k=>F[k].clear());G_PROJ='';G_LEAD='';
-  const gp=document.getElementById('g-proj-search');if(gp)gp.value='';
-  const gl=document.getElementById('g-lead-search');if(gl)gl.value='';
-  render();}
+function clearFilters(){
+  FKEYS.forEach(k=>F[k].clear());
+  G_PROJS.clear();G_LEADS.clear();
+  updateLiveMSBtn('g-proj',null,G_PROJS,'Project Name');
+  updateLiveMSBtn('g-lead',null,G_LEADS,'Lead ID');
+  render();
+}
 
 function applyFilters(){
   const active=FKEYS.filter(k=>F[k].size);
@@ -1034,20 +1113,20 @@ function applyFilters(){
     keep=new Set();
     LEADIDS.forEach(id=>{const rs=LEADMAP[id];if(active.every(k=>FMETA[k].lead?F[k].has(finalStat(rs)):rs.some(r=>F[k].has(fld(r,k)))))keep.add(id);});
   }
-  // Apply global project name text filter
-  if(G_PROJ){
+  // Apply global Project Name multi-select filter
+  if(G_PROJS.size){
     if(!keep)keep=new Set(LEADIDS);
     for(const id of [...keep]){
       const rs=LEADMAP[id];
-      const projName=(rs[0]&&rs[0].proj||'').toLowerCase();
-      if(!projName.includes(G_PROJ))keep.delete(id);
+      const projName=rs&&rs[0]?rs[0].proj||'':'';
+      if(!G_PROJS.has(projName))keep.delete(id);
     }
   }
-  // Apply global lead ID text filter
-  if(G_LEAD){
+  // Apply global Lead ID multi-select filter
+  if(G_LEADS.size){
     if(!keep)keep=new Set(LEADIDS);
     for(const id of [...keep]){
-      if(!id.toLowerCase().includes(G_LEAD))keep.delete(id);
+      if(!G_LEADS.has(id))keep.delete(id);
     }
   }
   if(!keep)return BASE.slice();
@@ -1056,8 +1135,8 @@ function applyFilters(){
 function renderChip(){
   const box=document.getElementById('drillchip');const chips=[];
   FKEYS.forEach(k=>F[k].forEach(v=>chips.push({k,v,t:FMETA[k].label+': '+dval(k,v),clear:()=>{F[k].delete(v);render();}})));
-  if(G_PROJ)chips.push({t:'Project: '+G_PROJ,clear:()=>{G_PROJ='';const el=document.getElementById('g-proj-search');if(el)el.value='';render();}});
-  if(G_LEAD)chips.push({t:'Lead ID: '+G_LEAD,clear:()=>{G_LEAD='';const el=document.getElementById('g-lead-search');if(el)el.value='';render();}});
+  G_PROJS.forEach(v=>chips.push({t:'Project: '+v.slice(0,25),clear:()=>{G_PROJS.delete(v);updateLiveMSBtn('g-proj',null,G_PROJS,'Project Name');render();}}));
+  G_LEADS.forEach(v=>chips.push({t:'Lead ID: '+v,clear:()=>{G_LEADS.delete(v);updateLiveMSBtn('g-lead',null,G_LEADS,'Lead ID');render();}}));
   if(!chips.length){box.style.display='none';box.innerHTML='';return;}
   box.style.display='flex';
   box.innerHTML='<span class="chiplead">Filtering by:</span>'+chips.map((c,i)=>`<span class="chip" data-i="${i}">${c.t} ✕</span>`).join('')+'<span class="chip clearall">Clear all ✕</span>';
@@ -1215,7 +1294,8 @@ function render(){
     tr.insertAdjacentHTML('afterend',h);tr.dataset.open=1;car.classList.add('open');
   });
   pt.querySelectorAll('.callbtn:not([disabled])').forEach(b=>b.onclick=e=>{e.stopPropagation();openModal(window.PROJ[b.dataset.i]);});
-  // re-apply any active search filter
+  // Init local table filters and re-apply any active selections
+  initTblFilters();
   filterProjTable();
 
   syncFilterUI();renderChip();
@@ -1434,39 +1514,101 @@ function closeModal(){document.getElementById('modal').classList.remove('show');
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeJourney();}});
 
 // ── Project-wise table: local name search (does not affect dashboard filters) ──
+// ── Project-wise table local multi-select filters ────────────
+let TBL_PROJS=new Set();  // selected project names for table
+let TBL_LEADS=new Set();  // selected lead IDs for table
+
+function initTblFilters(){
+  // Wire up tbl-proj panel
+  ['proj','lead'].forEach(t=>{
+    const btn=document.getElementById('tbl-'+t+'-btn');
+    const panel=document.getElementById('tbl-'+t+'-panel');
+    const qIn=document.getElementById('tbl-'+t+'-q');
+    if(!btn||!panel||!qIn)return;
+    panel.addEventListener('click',e=>e.stopPropagation());
+    btn.onclick=e=>{
+      e.stopPropagation();
+      const wasOpen=panel.classList.contains('open');
+      document.querySelectorAll('.ms-panel.open').forEach(p=>p.classList.remove('open'));
+      if(wasOpen)return;
+      const r=btn.getBoundingClientRect();
+      let left=r.left;if(left+290>window.innerWidth-8)left=window.innerWidth-298;
+      panel.style.left=left+'px';panel.style.top=(r.bottom+4)+'px';
+      panel.classList.add('open');
+      qIn.value='';renderTblOpts(t,'');
+      setTimeout(()=>qIn.focus(),0);
+    };
+    qIn.oninput=()=>renderTblOpts(t,qIn.value);
+    const closeA=panel.querySelector('.ms-close');
+    if(closeA)closeA.onclick=e=>{e.stopPropagation();panel.classList.remove('open');};
+  });
+}
+
+function renderTblOpts(t,q){
+  const ql=q.trim().toLowerCase();
+  const selSet=t==='proj'?TBL_PROJS:TBL_LEADS;
+  const allOpts=t==='proj'
+    ?[...new Set((window.PROJ_ALL||[]).map(p=>p.r&&p.r.proj||'').filter(Boolean))].sort()
+    :[...new Set((window.PROJ_ALL||[]).map(p=>p.id||'').filter(Boolean))].sort();
+  const selected=[...selSet].filter(v=>allOpts.includes(v));
+  const unselected=ql?allOpts.filter(v=>!selSet.has(v)&&v.toLowerCase().includes(ql)):[];
+  const show=[...selected,...unselected].slice(0,100);
+  const box=document.getElementById('tbl-'+t+'-opts');
+  if(!box)return;
+  if(!show.length&&ql){box.innerHTML='<div style="padding:10px 12px;font-size:12px;color:var(--muted);">No matches for "'+ql+'"</div>';return;}
+  if(!show.length){box.innerHTML='<div style="padding:10px 12px;font-size:12px;color:var(--muted);">Start typing to search…</div>';return;}
+  const hl=(s)=>{if(!ql)return s;const i=s.toLowerCase().indexOf(ql);return i<0?s:s.slice(0,i)+'<mark style="background:rgba(79,142,247,.25);border-radius:2px;">'+s.slice(i,i+ql.length)+'</mark>'+s.slice(i+ql.length);};
+  box.innerHTML=show.map(v=>{
+    const safe=v.replace(/\\/g,'\\\\').replace(/"/g,'&quot;').replace(/'/g,"\\'");
+    const chk=selSet.has(v)?'checked':'';
+    return `<label class="ms-opt" onclick="event.stopPropagation()"><input type="checkbox" ${chk} onchange="toggleTblFilter('${t}','${safe}')" /><span class="nm">${hl(v)}</span></label>`;
+  }).join('');
+  if(!ql&&allOpts.length>100)box.innerHTML+='<div style="padding:6px 12px;font-size:11px;color:var(--muted);">Showing 100 of '+allOpts.length+' — type to search</div>';
+}
+
+function toggleTblFilter(t,val){
+  const selSet=t==='proj'?TBL_PROJS:TBL_LEADS;
+  if(selSet.has(val))selSet.delete(val);else selSet.add(val);
+  updateTblBtn(t);filterProjTable();
+}
+
+function clearTblFilter(t){
+  const selSet=t==='proj'?TBL_PROJS:TBL_LEADS;
+  selSet.clear();updateTblBtn(t);
+  renderTblOpts(t,'');filterProjTable();
+}
+
+function updateTblBtn(t){
+  const btn=document.getElementById('tbl-'+t+'-btn');if(!btn)return;
+  const selSet=t==='proj'?TBL_PROJS:TBL_LEADS;
+  const label=t==='proj'?'Project Name':'Lead ID';
+  if(!selSet.size){btn.textContent='All';btn.classList.remove('has');}
+  else if(selSet.size===1){btn.textContent=[...selSet][0].slice(0,22);btn.classList.add('has');}
+  else{btn.textContent=selSet.size+' selected';btn.classList.add('has');}
+}
+
 function filterProjTable(){
-  const qp=(document.getElementById('proj_search')||{}).value||'';
-  const ql2=(document.getElementById('lead_search')||{}).value||'';
   const hint=document.getElementById('proj_search_hint');
-  const xp=document.getElementById('proj_search_x');if(xp)xp.style.display=qp?'block':'none';
-  const xl=document.getElementById('lead_search_x');if(xl)xl.style.display=ql2?'block':'none';
-  const qpl=qp.toLowerCase(),qll=ql2.toLowerCase();
   const rows=document.querySelectorAll('#proj_tbl tbody tr.proj-row');
-  if(!qpl&&!qll){rows.forEach(r=>r.style.display='');if(hint)hint.textContent='';return;}
+  const noFilter=!TBL_PROJS.size&&!TBL_LEADS.size;
+  if(noFilter){rows.forEach(r=>r.style.display='');if(hint)hint.textContent='';return;}
   let shown=0;
   rows.forEach(r=>{
     const i=r.dataset.i;
     document.querySelectorAll(`#proj_tbl .task-row[data-pi="${i}"]`).forEach(x=>x.remove());
     r.removeAttribute('data-open');
     const car=r.querySelector('.caret');if(car)car.classList.remove('open');
-    const projName=(r.querySelector('.proj-name-link')||{}).textContent||'';
     const proj=window.PROJ&&window.PROJ[i];
-    const leadId=(proj&&proj.id||'').toLowerCase();
-    const matchProj=!qpl||projName.toLowerCase().includes(qpl);
-    const matchLead=!qll||leadId.includes(qll);
+    const projName=proj&&proj.r?proj.r.proj||'':'';
+    const leadId=proj&&proj.id?proj.id:'';
+    const matchProj=!TBL_PROJS.size||TBL_PROJS.has(projName);
+    const matchLead=!TBL_LEADS.size||TBL_LEADS.has(leadId);
     const match=matchProj&&matchLead;
     r.style.display=match?'':'none';
     if(match)shown++;
   });
-  if(hint)hint.textContent=shown?shown+' match'+(shown>1?'es':''):'No matches';
-}
-function clearProjSearch(){
-  const el=document.getElementById('proj_search');if(el){el.value='';el.focus();}
-  filterProjTable();
-}
-function clearLeadSearch(){
-  const el=document.getElementById('lead_search');if(el){el.value='';el.focus();}
-  filterProjTable();
+  const total=rows.length;
+  if(hint)hint.textContent=shown<total?shown+' of '+total+' projects':'';
 }
 
 // ── Journey Summary popup ──
