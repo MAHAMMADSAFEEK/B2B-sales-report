@@ -943,39 +943,33 @@ function buildFilters(){
   const bar=document.getElementById('filters');
   bar.innerHTML='';
 
-  // ── Project Name text search (global) ──────────────────────
-  const projWrap=document.createElement('div');
-  projWrap.style.cssText='display:flex;flex-direction:column;gap:3px;';
-  projWrap.innerHTML=`<div class="ms" style="position:relative;min-width:180px;">
-    <label>Project Name</label>
+  // ── Project Name inline text search (styled same as dropdowns) ──
+  const projMs=document.createElement('div');projMs.className='ms';
+  projMs.innerHTML=`<label>Project Name</label>
     <div style="position:relative;">
       <input id="g-proj-search" type="text" placeholder="Search project…"
-        style="font-size:12px;padding:5px 26px 5px 8px;border:1px solid var(--line);border-radius:7px;background:var(--b50);color:var(--ink);outline:none;width:100%;min-width:160px;"
+        class="ms-btn" style="text-align:left;cursor:text;padding-right:22px;font-size:12px;min-width:130px;"
         value="${G_PROJ.replace(/"/g,'&quot;')}"
-        oninput="setGProj(this.value)" onfocus="this.style.borderColor='var(--b500)'" onblur="this.style.borderColor='var(--line)'">
-      <span id="g-proj-x" onclick="document.getElementById('g-proj-search').value='';setGProj('');"
-        style="display:${G_PROJ?'flex':'none'};position:absolute;right:6px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--muted);font-size:14px;line-height:1;align-items:center;">×</span>
-    </div>
-  </div>`;
-  bar.appendChild(projWrap);
+        oninput="setGProj(this.value)" onclick="event.stopPropagation()">
+      <span id="g-proj-x" onclick="event.stopPropagation();document.getElementById('g-proj-search').value='';setGProj('');"
+        style="display:${G_PROJ?'block':'none'};position:absolute;right:7px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--muted);font-size:15px;line-height:1;">×</span>
+    </div>`;
+  bar.appendChild(projMs);
 
-  // ── Lead ID text search (global) ───────────────────────────
-  const leadWrap=document.createElement('div');
-  leadWrap.style.cssText='display:flex;flex-direction:column;gap:3px;';
-  leadWrap.innerHTML=`<div class="ms" style="position:relative;min-width:160px;">
-    <label>Lead ID</label>
+  // ── Lead ID inline text search ──────────────────────────────
+  const leadMs=document.createElement('div');leadMs.className='ms';
+  leadMs.innerHTML=`<label>Lead ID</label>
     <div style="position:relative;">
       <input id="g-lead-search" type="text" placeholder="Search lead ID…"
-        style="font-size:12px;padding:5px 26px 5px 8px;border:1px solid var(--line);border-radius:7px;background:var(--b50);color:var(--ink);outline:none;width:100%;min-width:140px;"
+        class="ms-btn" style="text-align:left;cursor:text;padding-right:22px;font-size:12px;min-width:120px;"
         value="${G_LEAD.replace(/"/g,'&quot;')}"
-        oninput="setGLead(this.value)" onfocus="this.style.borderColor='var(--b500)'" onblur="this.style.borderColor='var(--line)'">
-      <span id="g-lead-x" onclick="document.getElementById('g-lead-search').value='';setGLead('');"
-        style="display:${G_LEAD?'flex':'none'};position:absolute;right:6px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--muted);font-size:14px;line-height:1;align-items:center;">×</span>
-    </div>
-  </div>`;
-  bar.appendChild(leadWrap);
+        oninput="setGLead(this.value)" onclick="event.stopPropagation()">
+      <span id="g-lead-x" onclick="event.stopPropagation();document.getElementById('g-lead-search').value='';setGLead('');"
+        style="display:${G_LEAD?'block':'none'};position:absolute;right:7px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--muted);font-size:15px;line-height:1;">×</span>
+    </div>`;
+  bar.appendChild(leadMs);
 
-  // ── Standard dropdown filters ──────────────────────────────
+  // ── Dropdown filters ────────────────────────────────────────
   FKEYS.filter(k=>!FMETA[k].noUI).forEach(k=>{
     const ms=document.createElement('div');ms.className='ms';ms.dataset.k=k;
     ms.innerHTML=`<label>${FMETA[k].label}</label>
@@ -1192,7 +1186,10 @@ function render(){
     const r=p.r,calls=p.rows.reduce((s,x)=>s+(x.callLog?x.callLog.length:0),0);
     const ph=(p.rows.map(x=>x.hoto).filter(Boolean).sort()[0])||'';
     return `<tr class="proj-row" data-i="${i}"><td><span class="caret">▶</span></td><td>${nu(r.city)}</td><td>${nu(r.bdm)}</td>
-      <td><b class="proj-name-link" data-i="${i}" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;color:var(--b700);" title="Click to view journey summary">${nu(r.proj)}</b></td>
+      <td><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+        <b class="proj-name-link" data-i="${i}" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;color:var(--b700);" title="Click to view journey summary">${nu(r.proj)}</b>
+        ${p.rows.length>1?`<span style="font-size:10px;font-weight:700;background:var(--b900);color:#fff;padding:1px 6px;border-radius:10px;white-space:nowrap;" title="${p.rows.length} meetings">${p.rows.length} meetings</span>`:`<span style="font-size:10px;color:var(--muted);padding:1px 5px;border-radius:10px;background:var(--b50);border:1px solid var(--line);white-space:nowrap;">1 meeting</span>`}
+      </div></td>
       <td class="num">${r.size?fmt(r.size):'<span class="notupd">Not updated</span>'}</td>
       <td><span class="pill ${statusClass(r.pstat)}">${(r.pstat||'').replace('Meeting ','')||'—'}</span></td>
       <td>${ph?`<span class="pill st-conf">${ph}</span>`:'<span class="notupd">Not updated</span>'}</td>
